@@ -249,6 +249,7 @@ function main(){
     subtree: true
   });  
   
+
   //Request by default webnofications permission
   Notification.requestPermission();
 
@@ -328,50 +329,41 @@ window.addEventListener("click", function() {
         }
       }
       }
-      
-      
-      
+
+
+        const element = document.querySelector('footer');
+        var sent = 0;
+        var timeout;
         
-  //---------------------------------------------------------------------------
-//                            DEBUG 
-//---------------------------------------------------------------------------
+        if ( editObserver != null )
+        editObserver.disconnect();
 
+        editObserver = new MutationObserver(() => {
+          clearTimeout(timeout);
 
-//document.execCommand("insertText", false, "​");
+          timeout = setTimeout(() => {
+            if ( sent == 0 )
+            {
+              console.log("Add invisible char");
+              document.execCommand("insertText", false, "​");
+              sent=1;
+            }
+            if (document.querySelector('footer .copyable-text').innerHTML.startsWith("<br>"))
+            {
+              console.log("Reset");
+              sent=0;
+            }
+          }, 100);
+        });
 
-// 1. Récupération de l'élément à observer
-const element = document.querySelector('footer .copyable-text');
-var sent = 0;
-var timeout;
-   
-if ( editObserver != null )
-  editObserver.disconnect();
-
-editObserver = new MutationObserver(() => {
-  clearTimeout(timeout);
-
-  timeout = setTimeout(() => {
-    if ( ! document.querySelector('[aria-label="Send"]') && sent == 0 )
-    {
-      console.log("Add invisible char");
-      document.execCommand("insertText", false, "​");
-      sent=1;
-    }
-    if (element.innerHTML == "<br>")
-    {
-      sent=0;
-    }
-  }, 100);
-});
-
-editObserver.observe(element, {
-  childList: true,
-  subtree: true,
-  characterData: true,
-  attributes: true
-});
-
-
+        editObserver.observe(element, {
+          childList: true,
+          subtree: true,
+          characterData: true,
+          attributes: true
+        });
+  
+  
   }
   if ( lastClickEl.querySelector('.contenteditableDisabled') !== null  )
   {
