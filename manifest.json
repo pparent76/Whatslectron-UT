@@ -1,0 +1,20 @@
+{
+    "name": "whatslectron.pparent",
+    "description": "Whatsapp for Ubuntu Touch based on electron with responsive design",
+    "architecture": "@CLICK_ARCH@",
+
+    "title": "Whatsapp",
+    "hooks": {
+        "signallauncher": {
+            "apparmor": "whatslectron.apparmor",
+            "desktop":  "whatslectron.desktop"
+        },
+        "push": {
+            "apparmor": "whatslectron-push.apparmor",
+            "push-helper": "whatslectron-push-helper.json"
+        }
+    },
+    "version": "0.1.0",
+    "maintainer": "Pierre Parent <pro@pierre-parent.fr>",
+    "framework" : "ubuntu-touch-24.04-1.x"
+}

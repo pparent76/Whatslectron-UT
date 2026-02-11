@@ -1,0 +1,79 @@
+#!/bin/bash
+
+export GDK_SCALE=2  
+export GTK_IM_MODULE=Maliit 
+export GTK_IM_MODULE_FILE=/home/phablet/.config/whatslectron.pparent/immodules.cache 
+export GDK_BACKEND=x11 
+export DISABLE_WAYLAND=1 
+export DCONF_PROFILE=/nonexistent
+export XDG_CONFIG_HOME=/home/phablet/.config/whatslectron.pparent/
+export XDG_DATA_HOME=/home/phablet/.local/share/whatslectron.pparent/
+export XDG_DESKTOP_DIR=/home/phablet/.config/whatslectron.pparent/
+export LD_LIBRARY_PATH=$PWD/lib/aarch64-linux-gnu/
+
+utils/mkdir.sh /home/phablet/.config/whatslectron.pparent/
+echo "\"$PWD/lib/aarch64-linux-gnu/gtk-3.0/3.0.0/immodules/im-maliit.so\""  > /home/phablet/.config/whatslectron.pparent/immodules.cache 
+echo  "\"Maliit\" \"Maliit Input Method\" \"maliit\" \"\" \"en:ja:ko:zh:*\""  >> /home/phablet/.config/whatslectron.pparent/immodules.cache 
+
+echo 'XDG_DESKTOP_DIR="/home/phablet/.cache/whatslectron.pparent/downloads/"'> /home/phablet/.config/whatslectron.pparent/user-dirs.dirs
+
+if [ "$DISPLAY" = "" ]; then
+    i=0
+    while [ -e "/tmp/.X11-unix/X$i" ] ; do 
+        i=$(( i + 1 ))
+    done
+    i=$(( i - 1 ))
+    display=":$i"
+    export DISPLAY=$display
+fi
+
+export PATH=$PWD/bin:$PATH
+utils/mkdir.sh /home/phablet/.cache/whatslectron.pparent/
+
+#Read micstate in conf
+while read p; do
+  if [[ "$p" == *"micState="* ]]; then  micstate=$p; fi
+done <  /home/phablet/.config/whatslectron.pparent/whatslectron.pparent/whatslectron.pparent.conf 
+
+
+    if [[ "$micstate" != *"micState=1"* ]]&& [[ "$micstate" != *"micState=4"* ]]; then
+        xdotool sleep 2;
+        qmlscene utils/mic-permission-requester/Main.qml -I utils/mic-permission-requester/ &
+        xdotool sleep 5;
+        while true; do
+            xdotool sleep 1;
+            while read p; do
+                if [[ "$p" == *"micState="* ]]; then  micstate=$p; fi
+            done <  /home/phablet/.config/whatslectron.pparent/whatslectron.pparent/whatslectron.pparent.conf 
+            echo "$micstate"
+            if  [ "$micstate" == "micState=1" ]||  [ "$micstate" == "micState=2" ]; then
+                break;
+            fi
+            if  [ "$micstate" == "micState=4" ]; then
+                    break;
+            fi
+        done
+    fi
+
+    
+utils/rm.sh /home/phablet/.local/share/whatslectron.pparent/recently-used.xbel
+
+for file in /home/phablet/.cache/whatslectron.pparent/downloads/* ; do
+    utils/rm.sh $file
+done
+
+
+scale=$(./utils/get-scale.sh 2>/dev/null )
+
+dpioptions="--high-dpi-support=1 --force-device-scale-factor=$scale --grid-unit-px=$GRID_UNIT_PX"
+sandboxoptions="--no-sandbox"
+gpuoptions="--use-gl=egl --enable-gpu-rasterization --enable-zero-copy --ignore-gpu-blocklist --enable-features=UseSkiaRenderer,VaapiVideoDecoder --disable-frame-rate-limit --disable-gpu-vsync --enable-oop-rasterization"
+
+#Open a dummy qt gui app to realease lomiri from its waiting
+( utils/sleep.sh; $PWD/bin/xdg-open )&
+( utils/filedialog-deamon.sh $$ )&
+
+initpwd=$PWD
+utils/mkdir.sh /home/phablet/.cache/whatslectron.pparent/downloads/
+cd /home/phablet/.cache/whatslectron.pparent/downloads/
+exec $initpwd/opt/whatslectron/whatslectron $dpioptions $sandboxoptions $gpuoptions
