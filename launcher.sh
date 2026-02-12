@@ -32,24 +32,24 @@ utils/mkdir.sh /home/phablet/.cache/whatslectron.pparent/
 
 #Read micstate in conf
 while read p; do
-  if [[ "$p" == *"micState="* ]]; then  micstate=$p; fi
+  if [[ "$p" == *"microState="* ]]; then  micstate=$p; fi
 done <  /home/phablet/.config/whatslectron.pparent/whatslectron.pparent/whatslectron.pparent.conf 
 
 
-    if [[ "$micstate" != *"micState=1"* ]]&& [[ "$micstate" != *"micState=4"* ]]; then
+    if [[ "$micstate" != *"microState=1"* ]]&& [[ "$micstate" != *"microState=4"* ]]; then
         xdotool sleep 2;
         qmlscene utils/mic-permission-requester/Main.qml -I utils/mic-permission-requester/ &
         xdotool sleep 5;
         while true; do
             xdotool sleep 1;
             while read p; do
-                if [[ "$p" == *"micState="* ]]; then  micstate=$p; fi
+                if [[ "$p" == *"microState="* ]]; then  micstate=$p; fi
             done <  /home/phablet/.config/whatslectron.pparent/whatslectron.pparent/whatslectron.pparent.conf 
             echo "$micstate"
-            if  [ "$micstate" == "micState=1" ]||  [ "$micstate" == "micState=2" ]; then
+            if  [ "$micstate" == "microState=1" ]||  [ "$micstate" == "microState=2" ]; then
                 break;
             fi
-            if  [ "$micstate" == "micState=4" ]; then
+            if  [ "$micstate" == "microState=4" ]; then
                     break;
             fi
         done

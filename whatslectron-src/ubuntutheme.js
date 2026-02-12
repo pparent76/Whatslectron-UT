@@ -139,7 +139,7 @@ function main(){
   // //Adapt fontsize
      try {
         addCss(".customDialog { transform: scaleX(0.8) scaleY(0.8) !important; transition: transform 0.3s ease !important; }");    
-        addCss(".emojiDialog { transform: scaleX(0.7) scaleY(0.7) !important; transition: transform 0.3s ease !important; transformOrigin = left bottom !important; left:2% !important; }"); 
+        addCss(".emojiDialog { transform: scaleX(0.66) scaleY(0.66) !important; transition: transform 0.3s ease !important; transformOrigin = left bottom !important; left:2% !important; }"); 
         X.chatList().classList.add("NavSidebar");
         addCss(".NavSidebar { transition: transform 0.25s ease-in-out !important }")
         addCss(".message-out {  padding-right: 20px !important; }");
@@ -263,6 +263,26 @@ function main(){
 //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 //-----------------------------------------------------------------------------------------
 
+function moveCursorRight() {
+    const sel = window.getSelection();
+    if (!sel.rangeCount) return;
+
+    const range = sel.getRangeAt(0);
+    const node = range.startContainer;
+
+    if (node.nodeType === Node.TEXT_NODE) {
+        let offset = range.startOffset + 1;
+        offset = Math.min(offset, node.textContent.length);
+
+        const newRange = document.createRange();
+        newRange.setStart(node, offset);
+        newRange.collapse(true);
+
+        sel.removeAllRanges();
+        sel.addRange(newRange);
+    }
+}
+
 
 var editObserver=null;
 
@@ -342,17 +362,39 @@ window.addEventListener("click", function() {
           clearTimeout(timeout);
 
           timeout = setTimeout(() => {
-            if ( sent == 0 )
+            const editableElement = document.querySelector('footer .copyable-text');
+            let text = editableElement.innerText || editableElement.textContent;
+            console.log("*"+text+"* "+text.trim().length);
+            if ( ! text.includes(' ') &&  text.trim().length > 0 && sent ==0 )
             {
-              console.log("Add invisible char");
-              document.execCommand("insertText", false, "​");
-              sent=1;
+              console.log("Add space at the end");
+              document.execCommand("insertText", false, " ");
+              sent=1
             }
-            if (document.querySelector('footer .copyable-text').innerHTML.startsWith("<br>"))
+            if ( text.trim() === '' )
             {
-              console.log("Reset");
+              console.log("clean 1");
               sent=0;
+              moveCursorRight()    
+                editableElement.dispatchEvent(new KeyboardEvent('keydown', {
+                     key: 'Backspace',
+                     code: 'Backspace',
+                     bubbles: true
+                 }));
+                
             }
+               
+//             const textExceptLastTwo = text.slice(0, -2);
+// 
+//             if ( text === ' ' )
+//             {
+//               console.log("Clean message 1");
+//               document.querySelector('footer .copyable-text').innerHTML="<br>";
+//             }
+//               if((textExceptLastTwo.includes(' ') && text.endsWith(' ')) ) {
+//                             console.log("Clean message 2");
+//           
+           // }
           }, 100);
         });
 

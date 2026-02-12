@@ -15,7 +15,7 @@ MainView {
     property bool pushed: false
     
     Component.onCompleted: {
-        config.micState=0
+        config.microState=0
     }
     visible: Qt.application.active
     
@@ -43,7 +43,7 @@ MainView {
                pushed=true;
                button1.visible=false;
                overlayText.text="Whatsapp is starting..."
-               config.micState=4
+               config.microState=4
            }
         }
     }
@@ -51,7 +51,7 @@ MainView {
     Settings {
         id: config
         category: "MicState"
-        property int micState: 0
+        property int microState: 0
     }
     
         
@@ -139,7 +139,7 @@ MainView {
                             button3.visible=false
                             micIcon.visible=false
                             textMic.visible=false
-                            config.micState=3
+                            config.microState=3
                             myTimer.running=true
                         }
                         anchors.horizontalCenter: parent.horizontalCenter
@@ -153,7 +153,7 @@ MainView {
                         height: units.gu(5)
                         font.pixelSize: units.gu(2.2)
                         onClicked: {
-                            config.micState=2
+                            config.microState=2
                             overlayText.visible=true
                             loadingIndicator.visible=true
                             pushed=true
@@ -174,7 +174,7 @@ MainView {
                         height: units.gu(5)
                         font.pixelSize: units.gu(2.2)
                         onClicked: {
-                            config.micState=1
+                            config.microState=1
                             overlayText.visible=true
                             loadingIndicator.visible=true
                             pushed=true
@@ -250,7 +250,7 @@ MainView {
                     Text {
                         id: overlayText
                         visible: false
-                        text: "Signal is starting..."
+                        text: "Whatsapp is starting..."
                         color: "white"
                         font.pixelSize: units.gu(2.5)
                         horizontalAlignment: Text.AlignHCenter

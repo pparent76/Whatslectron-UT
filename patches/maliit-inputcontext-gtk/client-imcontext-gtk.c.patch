@@ -1,8 +1,8 @@
 diff --git a/gtk-input-context/client-gtk/client-imcontext-gtk.c b/gtk-input-context/client-gtk/client-imcontext-gtk.c
-index e26ce37..641ba9e 100644
+index e26ce37..40e900d 100644
 --- a/gtk-input-context/client-gtk/client-imcontext-gtk.c
 +++ b/gtk-input-context/client-gtk/client-imcontext-gtk.c
-@@ -32,6 +32,55 @@
+@@ -32,6 +32,33 @@
  #include "client-imcontext-gtk.h"
  #include "qt-gtk-translate.h"
  #include "debug.h"
@@ -33,52 +33,10 @@ index e26ce37..641ba9e 100644
 +        waitpid(pid, &status, 0);
 +    }
 +}
-+
-+void xdotool_type(char *text) {
-+    DBG("Calling xdotool Hack")
-+    pid_t pid = fork();
-+    if (pid < 0) {
-+        DBG("fork failed");
-+        return;
-+    }
-+
-+    if (pid == 0) {
-+        // enfant : remplacer le processus par xdotool
-+        execlp("xdotool", "xdotool", "type", text, (char *)NULL);
-+
-+        // si exec échoue
-+        DBG("execlp failed");
-+        _exit(1);
-+    } else {
-+        // parent : optionnel, attendre que l'enfant se termine
-+        int status;
-+        waitpid(pid, &status, 0);
-+    }
-+}
  
  static GType _maliit_im_context_type = 0;
  static GtkIMContextClass *parent_class = NULL;
-@@ -40,6 +89,9 @@ static MaliitIMContext *focused_im_context = NULL;
- static GtkWidget *focused_widget = NULL;
- 
- gboolean redirect_keys = FALSE;
-+gboolean preedit_requested = FALSE;
-+gboolean nopreedit_detected = FALSE;
-+static char * last_preedit_comited_string;
- 
- static void maliit_im_context_finalize(GObject *object);
- 
-@@ -339,6 +391,9 @@ maliit_im_context_init(MaliitIMContext *self)
- static void
- maliit_im_context_focus_in(GtkIMContext *context)
- {
-+    preedit_requested = FALSE;
-+    nopreedit_detected = FALSE;
-+    
-     MaliitIMContext *im_context = MALIIT_IM_CONTEXT(context);
-     gboolean focus_changed = TRUE;
-     GError *error = NULL;
-@@ -378,6 +433,8 @@ maliit_im_context_focus_in(GtkIMContext *context)
+@@ -378,6 +405,8 @@ maliit_im_context_focus_in(GtkIMContext *context)
          g_clear_error(&error);
      }
  
@@ -87,66 +45,7 @@ index e26ce37..641ba9e 100644
      // TODO: anything else than call "activateContext" and "showInputMethod" ?
  }
  
-@@ -385,6 +442,9 @@ maliit_im_context_focus_in(GtkIMContext *context)
- static void
- maliit_im_context_focus_out(GtkIMContext *context)
- {
-+    preedit_requested = FALSE;
-+    nopreedit_detected = FALSE;
-+    
-     MaliitIMContext *im_context = MALIIT_IM_CONTEXT(context);
-     GError *error = NULL;
- 
-@@ -503,7 +563,6 @@ maliit_im_context_reset(GtkIMContext *context)
-     if (im_context != focused_im_context) {
-         return;
-     }
--
-     /* Commit preedit if it is not empty */
-     if (focused_im_context && focused_im_context->preedit_str && focused_im_context->preedit_str[0]) {
-         char *commit_string = focused_im_context->preedit_str;
-@@ -524,6 +583,7 @@ maliit_im_context_reset(GtkIMContext *context)
- static void
- maliit_im_context_get_preedit_string(GtkIMContext *context, gchar **str, PangoAttrList **attrs, gint *cursor_pos)
- {
-+    preedit_requested = TRUE;
-     MaliitIMContext *im_context = MALIIT_IM_CONTEXT(context);
- 
-     if (!maliit_is_running()) {
-@@ -712,6 +772,21 @@ maliit_im_context_im_initiated_hide(MaliitContext *obj,
-     return FALSE;
- }
- 
-+gboolean preedit_timer_callback(gpointer string) {
-+ DBG("Timer called");   
-+   if (  preedit_requested == FALSE )
-+    { 
-+    DBG("Pre-edit not handled, probably password edit, sending pre-edit through xdotool"); 
-+    if ( last_preedit_comited_string != NULL)
-+        {
-+        xdotool_type(last_preedit_comited_string);
-+        nopreedit_detected=TRUE;
-+        free(last_preedit_comited_string);
-+        }
-+    }
-+ return FALSE;
-+}
-+
- gboolean
- maliit_im_context_commit_string(MaliitContext *obj,
-                               GDBusMethodInvocation *invocation,
-@@ -727,13 +802,17 @@ maliit_im_context_commit_string(MaliitContext *obj,
-     if (im_context != focused_im_context)
-         return FALSE;
- 
--    if (focused_im_context) {
-+    last_preedit_comited_string=g_strdup(string);
-+    g_timeout_add(200, preedit_timer_callback, NULL);
-+ 
-+ if (focused_im_context) {
-         g_free(focused_im_context->preedit_str);
-         focused_im_context->preedit_str = g_strdup("");
-         focused_im_context->preedit_cursor_pos = 0;
+@@ -734,6 +763,7 @@ maliit_im_context_commit_string(MaliitContext *obj,
          g_signal_emit_by_name(focused_im_context, "preedit-changed");
          g_signal_emit_by_name(focused_im_context, "commit", string);
          maliit_context_complete_commit_string(obj, invocation);
@@ -154,25 +53,7 @@ index e26ce37..641ba9e 100644
          return TRUE;
      }
  
-@@ -796,6 +875,17 @@ maliit_im_context_update_preedit(MaliitContext *obj,
-     if (im_context != focused_im_context)
-         return FALSE;
- 
-+    if ( preedit_requested == FALSE && (cursorPos > 1 || nopreedit_detected==TRUE) )
-+    { 
-+    DBG("Pre-edit not handled, probably password edit, sending pre-edit through xdotool"); 
-+    redirect_keys=TRUE; 
-+    char *ns = g_strdup(string);
-+    xdotool_type(ns);
-+    //focused_im_context->preedit_str="";
-+    maliit_im_context_reset(GTK_IM_CONTEXT(im_context));
-+    nopreedit_detected=TRUE;
-+    return FALSE;
-+    }
-     DBG("im_context = %p string = %s cursorPos = %d", im_context, string, cursorPos);
- 
-     if (focused_im_context) {
-@@ -896,6 +986,11 @@ maliit_im_context_key_event(MaliitContext *obj,
+@@ -896,6 +926,11 @@ maliit_im_context_key_event(MaliitContext *obj,
  
      if (focused_im_context)
          window = focused_im_context->client_window;
@@ -180,7 +61,7 @@ index e26ce37..641ba9e 100644
 +    if ( !window )
 +    {
 +        xdotool_hack_unlock_keyboard();
-+    }    
++    }
  
      event = qt_key_event_to_gdk(type, key, modifiers, text, window);
      if (!event)

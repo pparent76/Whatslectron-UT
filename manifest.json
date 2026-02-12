@@ -5,7 +5,7 @@
 
     "title": "Whatsapp",
     "hooks": {
-        "signallauncher": {
+        "whatslectron": {
             "apparmor": "whatslectron.apparmor",
             "desktop":  "whatslectron.desktop"
         },
@@ -14,7 +14,7 @@
             "push-helper": "whatslectron-push-helper.json"
         }
     },
-    "version": "0.1.0",
+    "version": "0.1.1",
     "maintainer": "Pierre Parent <pro@pierre-parent.fr>",
     "framework" : "ubuntu-touch-24.04-1.x"
 }

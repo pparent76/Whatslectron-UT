@@ -67,7 +67,7 @@ index 3ca0982..35c6d86 100644
 +    }
 +
 +    /* Method arguments */
-+    const gchar *channel = "whatslectron.pparent_signallauncher";
++    const gchar *channel = "whatslectron.pparent_whatslectron";
 +    const gchar json_payload[500];
 +    g_snprintf(json_payload,500, "{\"message\": \"%s\", "
 +        "\"notification\": {"
