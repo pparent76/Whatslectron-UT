@@ -120,8 +120,8 @@ function main(){
   // //Adapt fontsize
      try {
         addCss(".customDialog { transform: scaleX(0.8) scaleY(0.8) !important; transition: transform 0.3s ease !important; }");
-        addCss('[data-animate-modal-popup="true"] { transform: scaleX(0.55) scaleY(0.55) !important; padding-top: 5% !important; padding-left: 5% !important; height: 180% !important; }');
-         addCss('[data-animate-modal-body="true"] > * { height: 100% !important; } ');
+        addCss('.customDialog:has([direction="vertical"]) { transform: scaleX(0.55) scaleY(0.55) !important; padding-top: 5% !important; padding-left: 5% !important; height: 180% !important; }');
+         addCss('[data-animate-modal-body="true"]:has([direction="vertical"]) > * { height: 100% !important; } ');
         addCss(".emojiDialog { transform: scaleX(0.66) scaleY(0.66) !important; transition: transform 0.3s ease !important; transformOrigin = left bottom !important; left:2% !important; }"); 
         X.chatList().classList.add("NavSidebar");
         addCss(".NavSidebar { transition: transform 0.25s ease-in-out !important }")
