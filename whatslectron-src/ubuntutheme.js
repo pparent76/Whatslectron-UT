@@ -109,25 +109,6 @@ const X = {
 
 
 
-
-var tabletWordribbonHeight = 6; // gu
-var phoneWordribbonHeight = 4; // gu
-
-var phoneKeyboardHeightPortrait = 40; // percent of screen
-var phoneKeyboardHeightLandscape = 57; // percent of screen
-
-var tabletKeyboardHeightPortrait = 31; // percent of screen
-var tabletKeyboardHeightLandscape = 47; // percent of scree
-
-var keyboardMargin = 12; //px
-
-function guToPx(gu) {
-  const GRID_UNIT_PX=parseFloat(window.__cmdParams.gridUnitPx);
-  const scalingFactor=parseFloat(window.__cmdParams.forceScale);
-  //const pxPerMm = (96 / 25.4) * window.devicePixelRatio;
-  return Math.round(gu * GRID_UNIT_PX/ scalingFactor);
-}
-
 //----------------------------------------------s--------------------------------------------------
 //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // SECTION2:   Main() function that is called when it is detected that the main view has loaded
@@ -138,7 +119,9 @@ function main(){
   
   // //Adapt fontsize
      try {
-        addCss(".customDialog { transform: scaleX(0.8) scaleY(0.8) !important; transition: transform 0.3s ease !important; }");    
+        addCss(".customDialog { transform: scaleX(0.8) scaleY(0.8) !important; transition: transform 0.3s ease !important; }");
+        addCss('[data-animate-modal-popup="true"] { transform: scaleX(0.55) scaleY(0.55) !important; padding-top: 5% !important; padding-left: 5% !important; height: 180% !important; }');
+         addCss('[data-animate-modal-body="true"] > * { height: 100% !important; } ');
         addCss(".emojiDialog { transform: scaleX(0.66) scaleY(0.66) !important; transition: transform 0.3s ease !important; transformOrigin = left bottom !important; left:2% !important; }"); 
         X.chatList().classList.add("NavSidebar");
         addCss(".NavSidebar { transition: transform 0.25s ease-in-out !important }")
@@ -159,6 +142,7 @@ function main(){
   X.mainWrapper().style.minWidth = 'auto';
   X.mainWrapper().style.minHeight = 'auto';
   X.unkownSection1().style.borderInlineStartWidth = "0" ;
+  X.chatList().style.paddingLeft="0px"
   
   // Handle contactInfo Openned panel
   if (X.contactInfo() !== undefined){
@@ -305,53 +289,10 @@ window.addEventListener("click", function() {
   if (X.isElementInChatlist(lastClickEl) && X.chatList().style.transform != "translateX(-100%)" )
     showchatWindow();
   
-  setTimeout( () => {
-  calculateSecondaryChatWindowOpen();
-  },5);
-  setTimeout( () => {
-  //(Re)-enable content Editable ( If it was disabled when "OnFocus" was called without click)
-  if ( lastClickEl.closest('.contenteditableDisabled') !== null  )
+  console.log(lastClickEl);
+  if ( lastClickEl.closest('[contenteditable="true"]') !== null || lastClickEl.closest('.contenteditableDisabled') )
   {
-    var editableEl=lastClickEl.closest('.contenteditableDisabled');
-    lastClickEl.closest('.contenteditableDisabled').setAttribute('contenteditable', true);
-    lastClickEl.closest('.contenteditableDisabled').classList.remove('contenteditableDisabled') 
-    editableEl.focus();
-     if ( document.querySelector('footer').contains(lastClickEl) )
-      {
-        console.log("Add margin");
-      var isTablet=false;
-      if (window.innerWidth > guToPx(90) || window.innerHeight > guToPx(90))
-         isTablet=true;
-      if (window.innerWidth > window.innerHeight)
-      {
-        if (isTablet)
-        {
-        var pixel=guToPx(tabletWordribbonHeight)+keyboardMargin;
-       document.querySelector('footer').style.paddingBottom=`calc(${tabletKeyboardHeightLandscape}vh + ${pixel}px)`;
-        }
-        else
-        {
-        var pixel=guToPx(phoneWordribbonHeight)+keyboardMargin;
-        document.querySelector('footer').style.paddingBottom=`calc(${phoneKeyboardHeightLandscape}vh + ${pixel}px)`;
-        }
-      }
-      else
-      {
-        if (isTablet)
-        {
-        var pixel=guToPx(tabletWordribbonHeight)+keyboardMargin;
-        document.querySelector('footer').style.paddingBottom=`calc(${tabletKeyboardHeightPortrait}vh + ${pixel}px)`;
-        }
-        else
-        {
-        var pixel=guToPx(phoneWordribbonHeight)+keyboardMargin;
-        document.querySelector('footer').style.paddingBottom=`calc(${phoneKeyboardHeightPortrait}vh + ${pixel}px)`;
-        }
-      }
-      }
-
-
-        const element = document.querySelector('footer');
+           console.log("ediatable");
         var sent = 0;
         var timeout;
         
@@ -362,7 +303,7 @@ window.addEventListener("click", function() {
           clearTimeout(timeout);
 
           timeout = setTimeout(() => {
-            const editableElement = document.querySelector('footer .copyable-text');
+            const editableElement = lastClickEl.closest('.copyable-text');
             let text = editableElement.innerText || editableElement.textContent;
             console.log("*"+text+"* "+text.trim().length);
             if ( ! text.includes(' ') &&  text.trim().length > 0 && sent ==0 )
@@ -398,14 +339,36 @@ window.addEventListener("click", function() {
           }, 100);
         });
 
-        editObserver.observe(element, {
+        editObserver.observe(lastClickEl, {
           childList: true,
           subtree: true,
           characterData: true,
           attributes: true
-        });
+        }); 
+    
+  }
   
-  
+  setTimeout( () => {
+  calculateSecondaryChatWindowOpen();
+  },5);
+  setTimeout( () => {
+  //(Re)-enable content Editable ( If it was disabled when "OnFocus" was called without click)
+  if ( lastClickEl.closest('.contenteditableDisabled') !== null  )
+  {
+    var editableEl=lastClickEl.closest('.contenteditableDisabled');
+    lastClickEl.closest('.contenteditableDisabled').setAttribute('contenteditable', true);
+    lastClickEl.closest('.contenteditableDisabled').classList.remove('contenteditableDisabled') 
+    editableEl.focus();
+     if ( document.querySelector('footer').contains(lastClickEl) )
+      {
+        console.log("Add margin");
+        try
+        {
+        var keyboardHeight = Math.round(parseFloat(window.__cmdParams.keyboardHeight) /parseFloat(window.__cmdParams.forceScale));
+        document.querySelector('footer').style.paddingBottom=`${keyboardHeight}px`;
+        }
+        catch (e) { /* safe */ }
+      }  
   }
   if ( lastClickEl.querySelector('.contenteditableDisabled') !== null  )
   {
@@ -624,6 +587,7 @@ function toggleLeftMenu(){
         X.chatWindow().style.position="absolute"
         X.chatWindow().style.left="0"
         X.leftMenu().style.marginRight="-1px"
+        X.chatList().style.paddingLeft="0px"
         
       }
       else
@@ -851,85 +815,3 @@ Notification.requestPermission();
   } catch(e){}
 
 })();
-
-
-
-//----------------------------------------------------------------------------
-//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-//   SECTION13:  Handle blob downloads Workaround. 
-//               This work with qml-download-helper-module to allow downloads
-//               Despite that Qt5 does not support download from blobs.
-//               TO BE REMOVED WHEN UPGRADING TO QT6
-//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-//----------------------------------------------------------------------------
-
-const blobMap = new Map();
-var downloadedBlob;
-
-  // 1) Surveiller la création des blob: URLs
-  const origCreateObjectURL = URL.createObjectURL.bind(URL);
-  URL.createObjectURL = function (blob) {
-    const url = origCreateObjectURL(blob);
-    try {
-      blobMap.set(url, { blob, createdAt: new Date() });
-    } catch (e) { /* fail silently si Map non permise */ }
-    return url;
-  };
-
-  // 1b) Surveiller revoke (nettoyage)
-  const origRevokeObjectURL = URL.revokeObjectURL.bind(URL);
-  URL.revokeObjectURL = function (url) {
-    if (blobMap.has(url)) {
-      blobMap.delete(url);
-    }
-    return origRevokeObjectURL(url);
-  };
-
-
-  
-  function saveBlob(blob, key) {
-    return new Promise((resolve, reject) => {
-        const request = indexedDB.open("MyDB", 1);
-
-        request.onupgradeneeded = (event) => {
-            const db = event.target.result;
-            if (!db.objectStoreNames.contains("blobs")) {
-                db.createObjectStore("blobs");
-            }
-        };
-
-        request.onsuccess = (event) => {
-            const db = event.target.result;
-            const tx = db.transaction("blobs", "readwrite");
-            const store = tx.objectStore("blobs");
-            store.put(blob, key);
-
-            tx.oncomplete = () => {resolve(); console.log('[DownloadBlob] test');}
-            tx.onerror = (e) => reject(e);
-        };
-
-        request.onerror = (e) => reject(e);
-    });
-}
-
-  // 2) Intercepter les clics sur les liens <a> pointant vers blob:
-  document.addEventListener('click', function (ev) {
-    // ne pas empêcher le comportement par défaut, juste logger
-    let target = ev.target;
-    while (target && target !== document) {
-      if (target.tagName === 'A' && target.href) {
-        try {
-          const href = target.href;
-          if (href.startsWith('blob:')) {
-            const entry = blobMap.get(href);
-            downloadedBlob=entry;
-            saveBlob(downloadedBlob.blob,"testpierre")
-          }
-        } catch (e) { /* ignore */ }
-        break; // qu'on trouve ou pas, on sort
-      }
-      target = target.parentNode;
-    }
-  }, true); // capture phase pour attraper tôt
-
-

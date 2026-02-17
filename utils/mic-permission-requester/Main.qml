@@ -52,6 +52,7 @@ MainView {
         id: config
         category: "MicState"
         property int microState: 0
+        property int keyboardHeight: 0
     }
     
         
@@ -85,16 +86,49 @@ MainView {
                     anchors.horizontalCenter: parent.horizontalCenter
                 }
 
+                    Item {
+                        id: focusStealer
+                        visible: false
+                    }
                 // --- Titre ---
-                Label {
-                    text: "Welcome to Whatslectron!"
-                    fontSize: "large"
+                QCC.TextField {
+                    id: titleField
+
+                    text: "Welcome to Whatsnew!"
                     font.bold: true
-                    color: "white"
                     font.pixelSize: units.gu(3.5)
+                    color: "white"
+
                     horizontalAlignment: Text.AlignHCenter
                     anchors.horizontalCenter: parent.horizontalCenter
+
+                    selectByMouse: true
+                    cursorVisible: activeFocus
+
+                    // Supprime totalement l'aspect "input"
+                    background: Rectangle {
+                        color: "transparent"
+                        border.width: 0
+                    }
+                    
+                    
+                    Component.onCompleted: {
+                        forceActiveFocus()
+                        blurTimer.start()
+                    }
+
+                    Timer {
+                        id: blurTimer
+                        interval: 500   
+                        repeat: false
+
+                        onTriggered: {
+                            config.keyboardHeight= UbuntuApplication.inputMethod.visible ?UbuntuApplication.inputMethod.keyboardRectangle.height: 0
+                            focusStealer.forceActiveFocus()
+                        }
+                    }
                 }
+
 
                 // --- Icône Micro ---
                 Image {

@@ -3,7 +3,7 @@
     "description": "Whatsapp for Ubuntu Touch based on electron with responsive design",
     "architecture": "@CLICK_ARCH@",
 
-    "title": "Whatsapp",
+    "title": "Whatsnew",
     "hooks": {
         "whatslectron": {
             "apparmor": "whatslectron.apparmor",
@@ -14,7 +14,7 @@
             "push-helper": "whatslectron-push-helper.json"
         }
     },
-    "version": "0.1.1",
+    "version": "0.1.2",
     "maintainer": "Pierre Parent <pro@pierre-parent.fr>",
     "framework" : "ubuntu-touch-24.04-1.x"
 }

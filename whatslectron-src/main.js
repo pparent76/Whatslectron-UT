@@ -39,10 +39,12 @@ function createWindow() {
       const jsCode = fs.readFileSync(userScriptPath, 'utf8');
 
       const params = {
-          gridUnitPx: app.commandLine.getSwitchValue('grid-unit-px'),
+          keyboardHeight: app.commandLine.getSwitchValue('keyboard-height'),
           forceScale: app.commandLine.getSwitchValue('force-device-scale-factor'),
       };
  
+      console.log("!!!!!!!!test!!!!!!!!!!!!!!!!!");
+      console.log(`${JSON.stringify(params)}`);
       injectableCode = `
       window.__cmdParams = ${JSON.stringify(params)};
 
