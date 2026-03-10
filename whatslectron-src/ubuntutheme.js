@@ -94,6 +94,7 @@ const X = {
   chatHeader: () =>  document.querySelector("div#main").querySelector("header"),
   
   dialog: () =>document.querySelector('[role="dialog"]'),
+  callsDialog: ()  =>document.querySelector('#wa-popovers-bucket').firstChild, 
   
   
   linkedDevicesInstructions: () => document.querySelector('#link-device-instructions-list'),
@@ -117,22 +118,6 @@ const X = {
 function main(){
   console.log("Call main function")
   
-  // //Adapt fontsize
-     try {
-        addCss(".customDialog { transform: scaleX(0.8) scaleY(0.8) !important; transition: transform 0.3s ease !important; }");
-        addCss('.customDialog:has([direction="vertical"]) { transform: scaleX(0.55) scaleY(0.55) !important; padding-top: 5% !important; padding-left: 5% !important; height: 180% !important; }');
-         addCss('[data-animate-modal-body="true"]:has([direction="vertical"]) > * { height: 100% !important; } ');
-        addCss(".emojiDialog { transform: scaleX(0.66) scaleY(0.66) !important; transition: transform 0.3s ease !important; transformOrigin = left bottom !important; left:2% !important; }"); 
-        X.chatList().classList.add("NavSidebar");
-        addCss(".NavSidebar { transition: transform 0.25s ease-in-out !important }")
-        addCss(".message-out {  padding-right: 20px !important; }");
-        addCss(".message-in {  padding-left: 20px !important; }");  
-        addCss("span { font-size: "+107+"% !important; }");    
-        addCss(".copyable-text { font-size: "+106+"% !important; }");         
-        addCss(".html-span { font-size: 96% !important; }");
-    } catch (e) { console.log("Error while applying css: "+e) }
-
-  
   X.overlayMenus().style.width="0";
   showchatlist();  
   X.chatList().style.minWidth = "100%"
@@ -149,30 +134,7 @@ function main(){
         inchatcontactandgroupinfo();
   }
       
-   //--------------------------------------------------------------
-   // SECTION2.1 Avoid opening the keyboard when entering a chat
-  //              by listening to focusin
-  //---------------------------------------------------------------
-  document.body.addEventListener('focusin', (event) => {
-    lastFocusEl = event.target;
-    if ( lastFocusEl.isContentEditable  && (!lastClickEl || ! lastClickEl.isContentEditable ) )
-    {
-      lastFocusEl.blur();
-      lastFocusEl.setAttribute('contenteditable', false);
-      lastFocusEl.classList.add('contenteditableDisabled');
-      document.querySelector('footer').style.paddingBottom="0";
-    }
-    if ( ! document.querySelector('footer').contains(lastFocusEl) )
-      {
-        document.querySelector('footer').style.paddingBottom="0";
-      }
-    
-    if (X.chatWindow().contains(lastFocusEl))
-    {
-      calculateSecondaryChatWindowOpen();
-    }
-    
-  });
+
 
   addLeftMenuButtonToChatList();
   
@@ -207,13 +169,119 @@ function main(){
     observer.observe(X.leftSettingPannel(), { childList: true, subtree: true });
     },35)
   }
-  
-  
+
+  X.chatList().classList.add("NavSidebar");
+     
   //Send theme information to mainView
   console.log("[ThemeBackgroundColorDebug]"+getComputedStyle(X.leftMenu()).getPropertyValue('--WDS-surface-default').trim());
 
+  //Request by default webnofications permission
+  Notification.requestPermission();
+
+}
+
+
   
-  //------------------------------------------------------------
+  // //Adapt fontsize
+     try {
+       //Handle lock screen
+        addCss('main { width: 100%; height: 100%; position: fixed; left:0; top: 0; border-radius:0 !important; padding-left:5%; } '); 
+        addCss(".customDialog { transform: scaleX(0.8) scaleY(0.8) !important; transition: transform 0.3s ease !important; }");
+        addCss('.customDialog:has([direction="vertical"]) { transform: scaleX(0.55) scaleY(0.55) !important; padding-top: 5% !important; padding-left: 5% !important; height: 180% !important; }');
+         addCss('[data-animate-modal-body="true"]:has([direction="vertical"]) > * { height: 100% !important; } ');
+        addCss(".emojiDialog { transform: scaleX(0.66) scaleY(0.66) !important; transition: transform 0.3s ease !important; transformOrigin = left bottom !important; left:2% !important; }"); 
+        addCss(".NavSidebar { transition: transform 0.25s ease-in-out !important }")
+        addCss(".message-out {  padding-right: 20px !important; }");
+        addCss(".message-in {  padding-left: 20px !important; }");  
+        addCss("span { font-size: "+107+"% !important; }");    
+        addCss(".copyable-text { font-size: "+106+"% !important; }");         
+        addCss(".html-span { font-size: 96% !important; }");
+        addCss('[data-animate-dropdown-item="true"] { left: 2vw !important ; } ');
+    } catch (e) { console.log("Error while applying css: "+e) }
+
+    
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Enter" ) {
+      event.preventDefault();
+      console.log("Nullify lastClickEl");
+      lastFocusEl.blur();
+    }
+  }, true); 
+
+   //--------------------------------------------------------------
+   // SECTION2.1 Avoid opening the keyboard when entering a chat
+  //              by listening to focusin
+  //---------------------------------------------------------------
+  document.body.addEventListener('focusin', (event) => {
+    lastFocusEl = event.target;
+    
+    if ( lastFocusEl.isContentEditable )
+    {
+        var sent = 0;
+        var timeout;
+        
+        if ( editObserver != null )
+        editObserver.disconnect();
+
+        editObserver = new MutationObserver(() => {
+          clearTimeout(timeout);
+
+          timeout = setTimeout(() => {
+            const editableElement = lastFocusEl;
+            let text = editableElement.innerText || editableElement.textContent;
+            console.log("*"+text+"* "+text.trim().length);
+            if ( ! text.includes(' ') &&  text.trim().length > 0 && sent ==0 )
+            {
+              console.log("Add space at the end");
+              document.execCommand("insertText", false, " ");
+              sent=1
+            }
+            if ( text.trim() === '' && sent === 1 )
+            {
+              console.log("clean 1");
+              sent=0;
+              moveCursorRight()    
+                editableElement.dispatchEvent(new KeyboardEvent('keydown', {
+                     key: 'Backspace',
+                     code: 'Backspace',
+                     bubbles: true
+                 }));
+                
+            }
+               
+          }, 100);
+        });
+
+        editObserver.observe(lastFocusEl, {
+          childList: true,
+          subtree: true,
+          characterData: true,
+          attributes: true
+        }); 
+      
+    }
+    
+    if ( lastFocusEl.isContentEditable  && (!lastClickEl || ! lastClickEl.isContentEditable ) )
+    {
+      lastFocusEl.blur();
+      lastFocusEl.setAttribute('contenteditable', false);
+      lastFocusEl.classList.add('contenteditableDisabled');
+      document.querySelector('footer').style.paddingBottom="0";      
+    }
+    
+    if ( ! document.querySelector('footer').contains(lastFocusEl) )
+      {
+        document.querySelector('footer').style.paddingBottom="0";
+      }
+    
+    if (X.chatWindow().contains(lastFocusEl))
+    {
+      calculateSecondaryChatWindowOpen();
+    }
+    
+  });
+  
+   //------------------------------------------------------------
   //SECTION2.4 global mutation observer
   //------------------------------------------------------------
   const observer3 = new MutationObserver((mutations, obs) => {
@@ -233,12 +301,6 @@ function main(){
     subtree: true
   });  
   
-
-  //Request by default webnofications permission
-  Notification.requestPermission();
-
-
-}
 
 
 //-----------------------------------------------------------------------------------------
@@ -287,65 +349,8 @@ window.addEventListener("click", function() {
   lastClickEl=event.target;  
   
   if (X.isElementInChatlist(lastClickEl) && X.chatList().style.transform != "translateX(-100%)" )
-    showchatWindow();
-  
-  console.log(lastClickEl);
-  if ( lastClickEl.closest('[contenteditable="true"]') !== null || lastClickEl.closest('.contenteditableDisabled') )
   {
-           console.log("ediatable");
-        var sent = 0;
-        var timeout;
-        
-        if ( editObserver != null )
-        editObserver.disconnect();
-
-        editObserver = new MutationObserver(() => {
-          clearTimeout(timeout);
-
-          timeout = setTimeout(() => {
-            const editableElement = lastClickEl.closest('.copyable-text');
-            let text = editableElement.innerText || editableElement.textContent;
-            console.log("*"+text+"* "+text.trim().length);
-            if ( ! text.includes(' ') &&  text.trim().length > 0 && sent ==0 )
-            {
-              console.log("Add space at the end");
-              document.execCommand("insertText", false, " ");
-              sent=1
-            }
-            if ( text.trim() === '' )
-            {
-              console.log("clean 1");
-              sent=0;
-              moveCursorRight()    
-                editableElement.dispatchEvent(new KeyboardEvent('keydown', {
-                     key: 'Backspace',
-                     code: 'Backspace',
-                     bubbles: true
-                 }));
-                
-            }
-               
-//             const textExceptLastTwo = text.slice(0, -2);
-// 
-//             if ( text === ' ' )
-//             {
-//               console.log("Clean message 1");
-//               document.querySelector('footer .copyable-text').innerHTML="<br>";
-//             }
-//               if((textExceptLastTwo.includes(' ') && text.endsWith(' ')) ) {
-//                             console.log("Clean message 2");
-//           
-           // }
-          }, 100);
-        });
-
-        editObserver.observe(lastClickEl, {
-          childList: true,
-          subtree: true,
-          characterData: true,
-          attributes: true
-        }); 
-    
+    showchatWindow();
   }
   
   setTimeout( () => {
@@ -388,7 +393,9 @@ function calculateSecondaryChatWindowOpen()
   {
   //Special detect for in-community Panel
     if (X.isElementChatOpenerInCommunityPanel(lastClickEl))
+    {
         showchatWindow();
+    }
   }
   else
   {
@@ -398,6 +405,7 @@ function calculateSecondaryChatWindowOpen()
       //Click form Settings Panel (except community panel) -> proceed and open the chatWindow
         if( X.leftSettingPannel().contains(lastClickEl) )
         {
+        console.log("test1!!!!!!!!!!!!");
         //We have clicked on an element of left window
         showchatWindow();
         }
@@ -702,6 +710,8 @@ var checkExist = setInterval(function() {
     }
 }, 1000);
 
+
+     
 //----------------------------------------------------------------------------
 //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 //          SECTION9:  function to handle contactInfo pannel

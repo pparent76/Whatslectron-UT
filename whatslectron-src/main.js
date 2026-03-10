@@ -65,7 +65,20 @@ function createWindow() {
   win.webContents.setUserAgent(USER_AGENT);
   win.loadURL('https://web.whatsapp.com');
   
+  session.defaultSession.setPermissionRequestHandler((webContents, permission, callback, details) => {
+    if (permission === 'notifications') {
+      callback(true); 
+      return;
+    }
 
+    if (permission === 'media') {
+      const isFocused = win.isFocused();
+      callback(isFocused);
+      return;
+    }
+
+    callback(false);
+  });
     
     win.on('blur', () => {
         win.webContents.setAudioMuted(true);
