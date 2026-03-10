@@ -185,7 +185,6 @@ MainView {
                             loadingIndicator.visible=true
                             button2.visible=false
                             button3.visible=false
-                            micIcon.visible=false
                             textMic.visible=false
                             config.microState=3
                             myTimer.running=true
@@ -208,7 +207,6 @@ MainView {
                             button1.visible=false
                             button2.visible=false
                             button3.visible=false
-                            micIcon.visible=false
                             textMic.visible=false
                         }
                         anchors.horizontalCenter: parent.horizontalCenter
@@ -229,7 +227,6 @@ MainView {
                             button1.visible=false
                             button2.visible=false
                             button3.visible=false   
-                            micIcon.visible=false
                             textMic.visible=false
                         }
                         anchors.horizontalCenter: parent.horizontalCenter
