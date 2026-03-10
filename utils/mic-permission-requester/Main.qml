@@ -60,7 +60,7 @@ MainView {
     Page {
         id: permissionPage
         anchors.fill: parent
-        title: "whatslectron"
+        title: "whatsnew"
                 
 
         Rectangle {
@@ -69,22 +69,14 @@ MainView {
 
             Column {
                 id: content
-                spacing: units.gu(4)
+                spacing: units.gu(2)
                 anchors {
                     horizontalCenter: parent.horizontalCenter
                     top: parent.top
                     topMargin: units.gu(6)
                 }
 
-                // --- Logo app ---
-                Image {
-                    id: appLogo
-                    source: "icon.png"
-                    width: units.gu(20)
-                    height: units.gu(20)
-                    fillMode: Image.PreserveAspectFit
-                    anchors.horizontalCenter: parent.horizontalCenter
-                }
+         
 
                     Item {
                         id: focusStealer
@@ -96,7 +88,7 @@ MainView {
 
                     text: "Welcome to Whatsnew!"
                     font.bold: true
-                    font.pixelSize: units.gu(3.5)
+                    font.pixelSize: units.gu(3)
                     color: "white"
 
                     horizontalAlignment: Text.AlignHCenter
@@ -129,17 +121,39 @@ MainView {
                     }
                 }
 
-
-                // --- Icône Micro ---
+                Row
+                {
+                anchors.horizontalCenter: parent.horizontalCenter
+                height: units.gu(15)
+                width: units.gu(28)
+                spacing: units.gu(2)
+                       // --- Logo app ---
                 Image {
-                    id: micIcon
-                    source: "mic.png"
-                    width: units.gu(7)
-                    height: units.gu(7)
+                    id: appLogo
+                    source: "icon.png"
+                    width: units.gu(15)
+                    height: units.gu(15)
                     fillMode: Image.PreserveAspectFit
-                    anchors.horizontalCenter: parent.horizontalCenter
                 }
                 
+                Rectangle {
+                    width: units.gu(15)
+                    height: units.gu(15)
+                    color: "transparent"
+
+                        // --- Icône Micro ---
+                                Image {
+                                    id: micIcon
+                                    source: "mic.png"
+                                    width: units.gu(7)
+                                    height: units.gu(7)
+                                    anchors.top: parent.top
+                                    anchors.topMargin: units.gu(4)
+                                    fillMode: Image.PreserveAspectFit
+                                }
+                }
+      
+                }
                 // --- Question ---
                 Label {
                     id: textMic
@@ -219,6 +233,7 @@ MainView {
                             textMic.visible=false
                         }
                         anchors.horizontalCenter: parent.horizontalCenter
+                        
                     }
                     
                             // 2°) Indicateur circulaire
