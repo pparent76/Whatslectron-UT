@@ -185,7 +185,7 @@ function main(){
   // //Adapt fontsize
      try {
        //Handle lock screen
-        addCss('main { width: 100%; height: 100%; position: fixed; left:0; top: 0; border-radius:0 !important; padding-left:5%; } '); 
+        addCss('main { width: 100% !important; height: 100%; padding: 0 !important; position: fixed; left:0; top: 0; border-radius:0 !important; padding-left:5%; } '); 
         addCss(".customDialog { transform: scaleX(0.8) scaleY(0.8) !important; transition: transform 0.3s ease !important; }");
         addCss('.customDialog:has([direction="vertical"]) { transform: scaleX(0.55) scaleY(0.55) !important; padding-top: 5% !important; padding-left: 5% !important; height: 180% !important; }');
          addCss('[data-animate-modal-body="true"]:has([direction="vertical"]) > * { height: 100% !important; } ');
@@ -199,14 +199,34 @@ function main(){
         addCss('[data-animate-dropdown-item="true"] { left: 2vw !important ; } ');
     } catch (e) { console.log("Error while applying css: "+e) }
 
-    
-  document.addEventListener("keydown", (event) => {
-    if (event.key === "Enter" ) {
-      event.preventDefault();
-      console.log("Nullify lastClickEl");
-      lastFocusEl.blur();
+  // Listener prioritaire pour Enter
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    if( X.leftSettingPannel().contains(lastClickEl) && lastClickEl.isContentEditable )
+    {
+    lastClickEl=null;
+    console.log("Stoping Enter propagation");
+    e.stopImmediatePropagation(); 
+    let text = lastFocusEl.innerText || lastFocusEl.textContent;
+    if ( text.charAt(text.length - 1) === " " )
+    {
+              console.log("clean Search");
+              sent=0;
+              moveCursorRight()    
+                lastFocusEl.dispatchEvent(new KeyboardEvent('keydown', {
+                     key: 'Backspace',
+                     code: 'Backspace',
+                     bubbles: true
+                 }));
+                
+      }
     }
-  }, true); 
+    console.log('Enter pressed, blur !');
+    lastFocusEl.blur();
+  }
+}, true); // <-- "true" pour écouter en phase capture (avant les listeners normaux)
+
+
 
    //--------------------------------------------------------------
    // SECTION2.1 Avoid opening the keyboard when entering a chat
@@ -229,7 +249,6 @@ function main(){
           timeout = setTimeout(() => {
             const editableElement = lastFocusEl;
             let text = editableElement.innerText || editableElement.textContent;
-            console.log("*"+text+"* "+text.trim().length);
             if ( ! text.includes(' ') &&  text.trim().length > 0 && sent ==0 )
             {
               console.log("Add space at the end");
@@ -403,7 +422,7 @@ function calculateSecondaryChatWindowOpen()
     if (X.chatWindow().contains(lastFocusEl) )
     {
       //Click form Settings Panel (except community panel) -> proceed and open the chatWindow
-        if( X.leftSettingPannel().contains(lastClickEl) )
+        if( X.leftSettingPannel().contains(lastClickEl) && ! lastClickEl.isContentEditable )
         {
         console.log("test1!!!!!!!!!!!!");
         //We have clicked on an element of left window
@@ -704,11 +723,35 @@ var checkExist = setInterval(function() {
       if ( check == 0 ) {
         clearInterval(checkExist);
         console.log("[HideAppControls]")
-        main();
+        //main();
         check = 1;
       }
     }
 }, 1000);
+
+
+var mainWrapperExisted=false;
+
+// Création du MutationObserver
+const observer = new MutationObserver((mutationsList) => {
+  for (const mutation of mutationsList) {
+    // On regarde uniquement les ajouts et suppressions d'enfants
+    if (mutation.type === 'childList') {
+      
+      if (X.mainWrapper() !== null && mainWrapperExisted == false ) {
+        main();
+        
+      }
+       mainWrapperExisted=X.mainWrapper()!== null;
+    }
+  }
+});
+
+// Configuration du listener
+observer.observe(document.body, {
+  childList: true, // On observe les ajouts/suppressions d'enfants
+  subtree: true    // On observe aussi les descendants, pas seulement le parent direct
+});
 
 
      
@@ -757,7 +800,6 @@ window.addEventListener("load", function(event) {
 });
 
 document.addEventListener('readystatechange', event => {
-    console.log(event.target.readyState);
     if (event.target.readyState === "complete") {
         console.log("Completed");
     }
