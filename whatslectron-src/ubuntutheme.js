@@ -550,7 +550,7 @@ function backupBackButton()
 //------------------------------------------------------------------------------------
 function addLeftMenuButtonToChatList(){
   
-    if (  X.chatListHeader() && X.chatListHeader().firstChild && ! X.chatListHeader().querySelector('#added_menu_button') )
+    if (  X.chatListHeader() && X.chatListHeader().firstChild && ! X.chatListHeader().querySelector('.added_menu_button') )
     {
     addCss(".added_menu_button span { display:block; height: 100%; width: 100%;}.added_menu_button {  z-index:500; width:50px; height:45px; } html[dir] .added_menu_button { border-radius:50%; } html[dir=ltr] .added_menu_button { right:11px } html[dir=rtl] .added_menu_button { left:11px } .added_menu_button path { fill:var(--panel-header-icon); fill-opacity:1 } .svg_back { transform: rotate(90deg); height: 100%;}");
 
@@ -738,7 +738,7 @@ const observer = new MutationObserver((mutationsList) => {
     // On regarde uniquement les ajouts et suppressions d'enfants
     if (mutation.type === 'childList') {
       
-      if (X.mainWrapper() !== null && mainWrapperExisted == false ) {
+      if (X.mainWrapper() !== null && mainWrapperExisted == false && ! X.chatListHeader().querySelector('.added_menu_button') ) {
         main();
         
       }
