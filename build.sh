@@ -152,6 +152,11 @@ for dep in $DEPENDENCIES ; do
     dpkg-deb -x "${dep}.deb" "${dep}.deb_extract_chsdjksd"
 done
 
+wget https://launchpad.net/ubuntu/+source/coreutils/9.4-3ubuntu6/+build/28027146/+files/coreutils_9.4-3ubuntu6_arm64.deb
+rm -rvf "coreutils_9.4-3ubuntu6_arm64.deb_extract_chsdjksd" || true
+mkdir "coreutils_9.4-3ubuntu6_arm64.deb_extract_chsdjksd"
+dpkg-deb -x "coreutils_9.4-3ubuntu6_arm64.deb" "coreutils_9.4-3ubuntu6_arm64.deb_extract_chsdjksd"
+
 # =================================================
 # STEP 7: Downloading maliit-inputcontext-gtk3
 # =================================================
@@ -215,6 +220,7 @@ cp *_extract_chsdjksd/usr/bin/xdotool "$INSTALL_DIR/bin/"
 cp *_extract_chsdjksd/usr/bin/getprop "$INSTALL_DIR/bin/"
 cp *_extract_chsdjksd/usr/bin/xprop "$INSTALL_DIR/bin/"
 cp *_extract_chsdjksd/usr/bin/xev "$INSTALL_DIR/bin/"
+cp *_extract_chsdjksd/usr/bin/md5sum "$INSTALL_DIR/bin/"
 
 echo "Copying signal-desktop..."
 mkdir -p "$INSTALL_DIR/opt/whatslectron"
