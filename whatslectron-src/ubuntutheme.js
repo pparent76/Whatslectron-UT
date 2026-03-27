@@ -58,7 +58,7 @@
 //  SECTION1:   Layer of abstraction for WhatsApp web page
 //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 //---------------------------------------------------------------
-const X = {
+const My= {
   app: () => document.querySelector("#app"),
   browser: () => document.getElementById('app').getElementsByClassName('browser')[0] ,
   
@@ -104,7 +104,7 @@ const X = {
   //-----------------------------------------------------------------------------------------
   isInCommunityPannel: () => (document.querySelector("[role=navigation]") != null),
   isElementInChatlist: (el) => ( el.closest('[role="grid"]')!= null ),
-  isElementChatOpenerInCommunityPanel: (el) => X.leftSettingPannel().contains(lastClickEl) && lastClickEl.closest('[role="listitem"]') && lastClickEl.closest('[role="listitem"]').querySelector("[title]"),
+  isElementChatOpenerInCommunityPanel: (el) => My.leftSettingPannel().contains(lastClickEl) && lastClickEl.closest('[role="listitem"]') && lastClickEl.closest('[role="listitem"]').querySelector("[title]"),
   isAPossibleChatOpener: (el) => (el.closest("[role=listitem]") != null)
 };
 
@@ -118,19 +118,19 @@ const X = {
 function main(){
   console.log("Call main function")
   
-  X.overlayMenus().style.width="0";
+  My.overlayMenus().style.width="0";
   showchatlist();  
-  X.chatList().style.minWidth = "100%"
-  X.chatWindow().style.minWidth = "100%" 
-  X.chatWindow().style.maxWidth = "100%"  
-  X.chatWindow().style.width = "100%"   
-  X.mainWrapper().style.minWidth = 'auto';
-  X.mainWrapper().style.minHeight = 'auto';
-  X.unkownSection1().style.borderInlineStartWidth = "0" ;
-  X.chatList().style.paddingLeft="0px"
+  My.chatList().style.minWidth = "100%"
+  My.chatWindow().style.minWidth = "100%" 
+  My.chatWindow().style.maxWidth = "100%"  
+  My.chatWindow().style.width = "100%"   
+  My.mainWrapper().style.minWidth = 'auto';
+  My.mainWrapper().style.minHeight = 'auto';
+  My.unkownSection1().style.borderInlineStartWidth = "0" ;
+  My.chatList().style.paddingLeft="0px"
   
   // Handle contactInfo Openned panel
-  if (X.contactInfo() !== undefined){
+  if (My.contactInfo() !== undefined){
         inchatcontactandgroupinfo();
   }
       
@@ -138,42 +138,42 @@ function main(){
 
   addLeftMenuButtonToChatList();
   
-   if (X.leftMenu()) {
-     X.leftMenu().style.display = 'none';
+   if (My.leftMenu()) {
+     My.leftMenu().style.display = 'none';
    }
     
   //-------------------------------------
   //SECTION2.2   Fix emoticons panel
   //-------------------------------------
-  if (X.smileyWrapper()) {
+  if (My.smileyWrapper()) {
     const observer = new MutationObserver((mutationsList) => {
-          X.smileyPanel().style.transformOrigin = "left bottom";
-          X.smileyPanel().classList.add('emojiDialog') 
+          My.smileyPanel().style.transformOrigin = "left bottom";
+          My.smileyPanel().classList.add('emojiDialog') 
     });
-    observer.observe(X.smileyWrapper(), { childList: true, subtree: true });
+    observer.observe(My.smileyWrapper(), { childList: true, subtree: true });
   }
   
   //------------------------------------------------------------
   //SECTION2.3 Open left panel when changes are detected in it
   //------------------------------------------------------------
-  if (X.leftSettingPannel()) {
+  if (My.leftSettingPannel()) {
     setTimeout( () => {
     const observer = new MutationObserver((mutationsList) => {
-          if ( X.leftMenu().style.display == 'none' && X.chatList().style.transform != "translateX(-100%)" 
-            && !(lastClickEl != null &&  X.isAPossibleChatOpener(lastClickEl) &&  ! X.app().contains(lastClickEl)  )  )
+          if ( My.leftMenu().style.display == 'none' && My.chatList().style.transform != "translateX(-100%)" 
+            && !(lastClickEl != null &&  My.isAPossibleChatOpener(lastClickEl) &&  ! My.app().contains(lastClickEl)  )  )
           {
               console.log("toggle menu")
               toggleLeftMenu();
           }
     });
-    observer.observe(X.leftSettingPannel(), { childList: true, subtree: true });
+    observer.observe(My.leftSettingPannel(), { childList: true, subtree: true });
     },35)
   }
 
-  X.chatList().classList.add("NavSidebar");
+  My.chatList().classList.add("NavSidebar");
      
   //Send theme information to mainView
-  console.log("[ThemeBackgroundColorDebug]"+getComputedStyle(X.leftMenu()).getPropertyValue('--WDS-surface-default').trim());
+  console.log("[ThemeBackgroundColorDebug]"+getComputedStyle(My.leftMenu()).getPropertyValue('--WDS-surface-default').trim());
 
   //Request by default webnofications permission
   Notification.requestPermission();
@@ -202,7 +202,7 @@ function main(){
   // Listener prioritaire pour Enter
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Enter') {
-    if( X.leftSettingPannel().contains(lastClickEl) && lastClickEl.isContentEditable )
+    if( My.leftSettingPannel().contains(lastClickEl) && lastClickEl.isContentEditable )
     {
     lastClickEl=null;
     console.log("Stoping Enter propagation");
@@ -293,7 +293,7 @@ document.addEventListener('keydown', (e) => {
         document.querySelector('footer').style.paddingBottom="0";
       }
     
-    if (X.chatWindow().contains(lastFocusEl))
+    if (My.chatWindow().contains(lastFocusEl))
     {
       calculateSecondaryChatWindowOpen();
     }
@@ -305,10 +305,10 @@ document.addEventListener('keydown', (e) => {
   //------------------------------------------------------------
   const observer3 = new MutationObserver((mutations, obs) => {
     
-    if (X.dialog())
+    if (My.dialog())
     {
-      X.dialog().style.minWidth="100%"
-      X.dialog().firstChild.classList.add('customDialog')
+      My.dialog().style.minWidth="100%"
+      My.dialog().firstChild.classList.add('customDialog')
     }
     
     backupBackButton()
@@ -357,7 +357,7 @@ document.addEventListener("mousedown", (event) => {
    // Important section: Handle navigation towards chatWindow
    //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   //----------------------------------------------------------------------------------  
-  if (X.isElementInChatlist(event.target))
+  if (My.isElementInChatlist(event.target))
     requestAnimationFrame(() => {
      showchatWindow();
     })
@@ -367,7 +367,7 @@ window.addEventListener("click", function() {
   //Register Last clicked element
   lastClickEl=event.target;  
   
-  if (X.isElementInChatlist(lastClickEl) && X.chatList().style.transform != "translateX(-100%)" )
+  if (My.isElementInChatlist(lastClickEl) && My.chatList().style.transform != "translateX(-100%)" )
   {
     showchatWindow();
   }
@@ -408,10 +408,10 @@ window.addEventListener("click", function() {
 
 function calculateSecondaryChatWindowOpen()
 {
-  if ( X.isInCommunityPannel() )
+  if ( My.isInCommunityPannel() )
   {
   //Special detect for in-community Panel
-    if (X.isElementChatOpenerInCommunityPanel(lastClickEl))
+    if (My.isElementChatOpenerInCommunityPanel(lastClickEl))
     {
         showchatWindow();
     }
@@ -419,17 +419,17 @@ function calculateSecondaryChatWindowOpen()
   else
   {
     //If the focus was requested to ChatWindow
-    if (X.chatWindow().contains(lastFocusEl) )
+    if (My.chatWindow().contains(lastFocusEl) )
     {
       //Click form Settings Panel (except community panel) -> proceed and open the chatWindow
-        if( X.leftSettingPannel().contains(lastClickEl) && ! lastClickEl.isContentEditable )
+        if( My.leftSettingPannel().contains(lastClickEl) && ! lastClickEl.isContentEditable )
         {
         console.log("test1!!!!!!!!!!!!");
         //We have clicked on an element of left window
         showchatWindow();
         }
         //If we have a click on an orpheline listitem proceed as well
-        else if ( ! X.app().contains(lastClickEl) && X.isAPossibleChatOpener(lastClickEl) )
+        else if ( ! My.app().contains(lastClickEl) && My.isAPossibleChatOpener(lastClickEl) )
         {
           showchatWindow();
         }
@@ -454,13 +454,13 @@ window.addEventListener("click", function() {
 //---------------------------------------------------------------------
 function showchatlist(){
   
- if ( X.leftMenu().style.display != 'none')
+ if ( My.leftMenu().style.display != 'none')
    toggleLeftMenu()
   
   //Slide back Chatlist panel to main view  
-  X.chatList().style.transition= "transform 0.25s ease-in-out !important";
-  X.chatList().style.position= 'absolute';
-  X.chatList().style.transform= 'translateX(0)'; 
+  My.chatList().style.transition= "transform 0.25s ease-in-out !important";
+  My.chatList().style.position= 'absolute';
+  My.chatList().style.transform= 'translateX(0)'; 
   
   
   document.querySelectorAll(".contenteditableDisabled").forEach(el2 => {
@@ -473,30 +473,30 @@ function showchatWindow(){
   //Make sure to unfocus any focused élément of previous view
    document.activeElement.blur();
    
-   X.chatWindow().style.position=""
-   X.chatWindow().style.left=""
-   X.chatWindow().style.minWidth = "100%" 
-   X.chatWindow().style.maxWidth = "100%"  
-   X.chatWindow().style.width = "100%"
+   My.chatWindow().style.position=""
+   My.chatWindow().style.left=""
+   My.chatWindow().style.minWidth = "100%" 
+   My.chatWindow().style.maxWidth = "100%"  
+   My.chatWindow().style.width = "100%"
    
    //Slide Chatlist panel to the left
-   X.chatList().style.transition= "transform 0.25s ease-in-out !important";
-   X.chatList().style.position= 'absolute'; 
-   X.chatList().style.transform= "translateX(-100%)";
+   My.chatList().style.transition= "transform 0.25s ease-in-out !important";
+   My.chatList().style.position= 'absolute'; 
+   My.chatList().style.transform= "translateX(-100%)";
    
   //Hide left menu (in case it was oppened)
-   X.leftMenu().style.display = 'none';
-   X.unkownSection2().style.minWidth = "100%"    
-   X.overlayMenus().style.minWidth = "100%"
-   X.overlayMenus().style.width="100%"; 
+   My.leftMenu().style.display = 'none';
+   My.unkownSection2().style.minWidth = "100%"    
+   My.overlayMenus().style.minWidth = "100%"
+   My.overlayMenus().style.width="100%"; 
    
    //Activate Upload Panel, in case the user will upload some files
-    X.uploadPannel().style.width="100%";
-    X.uploadPannel().style.minWidth="100%";   
-    X.leftSettingPannel().style.display="none"; 
+    My.uploadPannel().style.width="100%";
+    My.uploadPannel().style.minWidth="100%";   
+    My.leftSettingPannel().style.display="none"; 
     
     // Handle contactInfo Openned panel
-    if (X.contactInfo() !== undefined){
+    if (My.contactInfo() !== undefined){
         inchatcontactandgroupinfo();
     }
   
@@ -522,10 +522,10 @@ function addBackButtonToChatViewWithTimeout()
 
 function backupBackButton()
 {
- if (X.chatList().style.transform== "translateX(-100%)") {
-  if ( X.mainDiv() && X.chatHeader() )
+ if (My.chatList().style.transform== "translateX(-100%)") {
+  if ( My.mainDiv() && My.chatHeader() )
   {
-    if (! X.chatHeader().querySelector('#back_button') )
+    if (! My.chatHeader().querySelector('#back_button') )
     {
     addBackButtonToChatView();  
     }
@@ -550,7 +550,7 @@ function backupBackButton()
 //------------------------------------------------------------------------------------
 function addLeftMenuButtonToChatList(){
   
-    if (  X.chatListHeader() && X.chatListHeader().firstChild && ! X.chatListHeader().querySelector('.added_menu_button') )
+    if (  My.chatListHeader() && My.chatListHeader().firstChild && ! My.chatListHeader().querySelector('.added_menu_button') )
     {
     addCss(".added_menu_button span { display:block; height: 100%; width: 100%;}.added_menu_button {  z-index:500; width:50px; height:45px; } html[dir] .added_menu_button { border-radius:50%; } html[dir=ltr] .added_menu_button { right:11px } html[dir=rtl] .added_menu_button { left:11px } .added_menu_button path { fill:var(--panel-header-icon); fill-opacity:1 } .svg_back { transform: rotate(90deg); height: 100%;}");
 
@@ -561,8 +561,8 @@ function addLeftMenuButtonToChatList(){
     newHTML.innerHTML   = '<a href="javascript:void(0);" ><span class="html-span" style="height:50px; width:60px;"><div class="html-div" style="padding:10px; --x-transform: none;"><div aria-expanded="false" aria-haspopup="menu" aria-label="MenuLeft" class=""><div class="html-div"><span aria-hidden="true" data-icon="more-refreshed" ><svg viewBox="0 0 24 24" height="24" width="24" preserveAspectRatio="xMidYMid meet" class="" fill="none"><title>more-refreshed</title><path d="M12 20C11.45 20 10.9792 19.8042 10.5875 19.4125C10.1958 19.0208 10 18.55 10 18C10 17.45 10.1958 16.9792 10.5875 16.5875C10.9792 16.1958 11.45 16 12 16C12.55 16 13.0208 16.1958 13.4125 16.5875C13.8042 16.9792 14 17.45 14 18C14 18.55 13.8042 19.0208 13.4125 19.4125C13.0208 19.8042 12.55 20 12 20ZM12 14C11.45 14 10.9792 13.8042 10.5875 13.4125C10.1958 13.0208 10 12.55 10 12C10 11.45 10.1958 10.9792 10.5875 10.5875C10.9792 10.1958 11.45 10 12 10C12.55 10 13.0208 10.1958 13.4125 10.5875C13.8042 10.9792 14 11.45 14 12C14 12.55 13.8042 13.0208 13.4125 13.4125C13.0208 13.8042 12.55 14 12 14ZM12 8C11.45 8 10.9792 7.80417 10.5875 7.4125C10.1958 7.02083 10 6.55 10 6C10 5.45 10.1958 4.97917 10.5875 4.5875C10.9792 4.19583 11.45 4 12 4C12.55 4 13.0208 4.19583 13.4125 4.5875C13.8042 4.97917 14 5.45 14 6C14 6.55 13.8042 7.02083 13.4125 7.4125C13.0208 7.80417 12.55 8 12 8Z" fill="currentColor"></path></svg></span></div><div class="html-div" role="none" data-visualcompletion="ignore" style="inset: 0px;"></div></div></div></span></a>';
     
     //Insert it, TODO improve the way it is inserted
-          X.chatListHeader().firstChild.style.width="calc(100% - 40px)";
-          X.chatListHeader().prepend(newHTML); 
+          My.chatListHeader().firstChild.style.width="calc(100% - 40px)";
+          My.chatListHeader().prepend(newHTML); 
     }
   
     
@@ -584,8 +584,8 @@ function addBackButtonToChatView(){
     newHTML.addEventListener("click", showchatlist);
     newHTML.innerHTML   = "<span data-icon='left' id='back_button' ><svg class='svg_back' id='Layer_1' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 21 21' width='21' height='21'><path fill='#000000' fill-opacity='1' d='M4.8 6.1l5.7 5.7 5.7-5.7 1.6 1.6-7.3 7.2-7.3-7.2 1.6-1.6z'></path></svg></span>";
 
-    if (! X.chatHeader().querySelector('#back_button') )
-        X.chatHeader().prepend(newHTML);
+    if (! My.chatHeader().querySelector('#back_button') )
+        My.chatHeader().prepend(newHTML);
 }
 
 //------------------------------------------------------------------------------------
@@ -594,43 +594,43 @@ function addBackButtonToChatView(){
 //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 //------------------------------------------------------------------------------------
 function toggleLeftMenu(){
-  if (X.leftMenu()) {
-      if ( X.leftMenu().style.display == 'none' )
+  if (My.leftMenu()) {
+      if ( My.leftMenu().style.display == 'none' )
       {
-        X.leftMenu().style.display = 'block';
-        X.unkownSection2().style.minWidth = "90%"
-        X.chatList().style.transform= '';
-        X.chatList().style.position= 'static';
+        My.leftMenu().style.display = 'block';
+        My.unkownSection2().style.minWidth = "90%"
+        My.chatList().style.transform= '';
+        My.chatList().style.position= 'static';
 
-        X.overlayMenus().style.width="100%";
-        X.overlayMenus().style.minWidth = "90%"
+        My.overlayMenus().style.width="100%";
+        My.overlayMenus().style.minWidth = "90%"
         
         
-        X.uploadPannel().style.width="";
-        X.uploadPannel().style.minWidth="";   
-        X.leftSettingPannel().style.display="";
-        X.leftSettingPannel().style.maxWidth="85%";            
-        X.leftSettingPannel().style.minWidth="85%";  
-        X.chatWindow().style.position="absolute"
-        X.chatWindow().style.left="0"
-        X.leftMenu().style.marginRight="-1px"
-        X.chatList().style.paddingLeft="0px"
+        My.uploadPannel().style.width="";
+        My.uploadPannel().style.minWidth="";   
+        My.leftSettingPannel().style.display="";
+        My.leftSettingPannel().style.maxWidth="85%";            
+        My.leftSettingPannel().style.minWidth="85%";  
+        My.chatWindow().style.position="absolute"
+        My.chatWindow().style.left="0"
+        My.leftMenu().style.marginRight="-1px"
+        My.chatList().style.paddingLeft="0px"
         
       }
       else
       {
-        X.chatWindow().style.position=""
-        X.chatWindow().style.left=""
-        X.chatList().style.position= 'absolute';
-        X.chatList().style.transform= 'translateX(0)';
-        X.overlayMenus().style.minWidth = "0%"
-        X.overlayMenus().style.width="0%";
+        My.chatWindow().style.position=""
+        My.chatWindow().style.left=""
+        My.chatList().style.position= 'absolute';
+        My.chatList().style.transform= 'translateX(0)';
+        My.overlayMenus().style.minWidth = "0%"
+        My.overlayMenus().style.width="0%";
         setTimeout(() => {
-           X.leftMenu().style.display = 'none';
-           X.unkownSection2().style.minWidth = "100%"   
+           My.leftMenu().style.display = 'none';
+           My.unkownSection2().style.minWidth = "100%"   
         }, 500);
         //Send theme information to mainView when closing menus
-          console.log("[ThemeBackgroundColorDebug]"+getComputedStyle(X.leftMenu()).getPropertyValue('--WDS-surface-default').trim());
+          console.log("[ThemeBackgroundColorDebug]"+getComputedStyle(My.leftMenu()).getPropertyValue('--WDS-surface-default').trim());
       }
   }
 }
@@ -701,25 +701,25 @@ window.addEventListener("click", function() {
 //-------------------------------------------------------------------------------
 var check = 0;
 var checkExist = setInterval(function() {
-    if (X.landingWrapper()) {
-      X.landingWrapper().style.minWidth = 'auto';
-      X.landingHeader().style.display = 'none';
+    if (My.landingWrapper()) {
+      My.landingWrapper().style.minWidth = 'auto';
+      My.landingHeader().style.display = 'none';
     }
-    if (X.linkedDevicesInstructions())
+    if (My.linkedDevicesInstructions())
     {
       //Make the login page responsive
-      X.loginView().style.width="100%"
-      X.loginView().style.height="100%"
-      X.loginView().style.position="fixed"
-      X.loginView().style.left="0"
-      X.loginView().style.top="0"
-      X.loginView().style.borderRadius= "0";
-      X.loginView().style.paddingLeft= "5%";
-      X.linkedDevicesInstructions().parentElement.parentElement.style.transformOrigin="left";
-      X.linkedDevicesInstructions().parentElement.parentElement.style.transform="scaleX(0.8) scaleY(0.8)";
+      My.loginView().style.width="100%"
+      My.loginView().style.height="100%"
+      My.loginView().style.position="fixed"
+      My.loginView().style.left="0"
+      My.loginView().style.top="0"
+      My.loginView().style.borderRadius= "0";
+      My.loginView().style.paddingLeft= "5%";
+      My.linkedDevicesInstructions().parentElement.parentElement.style.transformOrigin="left";
+      My.linkedDevicesInstructions().parentElement.parentElement.style.transform="scaleX(0.8) scaleY(0.8)";
       console.log("[HideAppControls]")
     }
-    if (X.mainWrapper().childNodes.length) {
+    if (My.mainWrapper().childNodes.length) {
       if ( check == 0 ) {
         clearInterval(checkExist);
         console.log("[HideAppControls]")
@@ -738,11 +738,11 @@ const observer = new MutationObserver((mutationsList) => {
     // On regarde uniquement les ajouts et suppressions d'enfants
     if (mutation.type === 'childList') {
       
-      if (X.mainWrapper() !== null && mainWrapperExisted == false && ! X.chatListHeader().querySelector('.added_menu_button') ) {
+      if (My.mainWrapper() !== null && mainWrapperExisted == false && ! My.chatListHeader().querySelector('.added_menu_button') ) {
         main();
         
       }
-       mainWrapperExisted=X.mainWrapper()!== null;
+       mainWrapperExisted=My.mainWrapper()!== null;
     }
   }
 });
@@ -762,12 +762,12 @@ observer.observe(document.body, {
 //----------------------------------------------------------------------------
 
 function inchatcontactandgroupinfo(){
-  if (X.contactInfo()){
+  if (My.contactInfo()){
       //We need for this section to use absolute postion
-      X.contactInfo().style.position= "absolute";
-      X.contactInfo().style.width = "100%";
-      X.contactInfo().style.maxWidth = "100%";  
-      X.contactInfo().style.pointerEvents="none";
+      My.contactInfo().style.position= "absolute";
+      My.contactInfo().style.width = "100%";
+      My.contactInfo().style.maxWidth = "100%";  
+      My.contactInfo().style.pointerEvents="none";
   }
 }
 

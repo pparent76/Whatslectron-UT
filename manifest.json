@@ -14,7 +14,7 @@
             "push-helper": "whatslectron-push-helper.json"
         }
     },
-    "version": "0.1.5",
+    "version": "0.1.6",
     "maintainer": "Pierre Parent <pro@pierre-parent.fr>",
     "framework" : "ubuntu-touch-24.04-1.x"
 }
