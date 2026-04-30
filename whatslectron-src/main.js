@@ -6,7 +6,7 @@ const { shell } = require('electron');
 
 const USER_AGENT =
   'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 ' +
-  '(KHTML, like Gecko) Chrome/146.0.7680.188 Safari/537.36';
+  '(KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36';
 
 // Active explicitement les événements tactiles
 app.commandLine.appendSwitch('touch-events', 'enabled');

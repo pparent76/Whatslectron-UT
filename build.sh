@@ -114,8 +114,8 @@ cd ${BUILD_DIR}/libnotify
 
 PKGNAME="libnotify"
 VERSION="0.8.3"
-ORIG_URL="https://launchpad.net/ubuntu/+archive/primary/+sourcefiles/libnotify/0.8.3-1build2/libnotify_0.8.3.orig.tar.xz"
-DEBIAN_URL="https://launchpad.net/ubuntu/+archive/primary/+sourcefiles/libnotify/0.8.3-1/libnotify_0.8.3-1.debian.tar.xz"
+ORIG_URL="https://ports.ubuntu.com/pool/main/libn/libnotify/libnotify_0.8.3.orig.tar.xz"
+DEBIAN_URL="https://ports.ubuntu.com/pool/main/libn/libnotify/libnotify_0.8.3-1build2.debian.tar.xz"
 
 echo "📦 Download sources..."
 wget -q "$ORIG_URL" -O "${PKGNAME}_${VERSION}.orig.tar.xz"
