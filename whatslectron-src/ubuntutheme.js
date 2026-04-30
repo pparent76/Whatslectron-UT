@@ -58,22 +58,26 @@
 //  SECTION1:   Layer of abstraction for WhatsApp web page
 //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 //---------------------------------------------------------------
+
+
+var indexChatList=4;
+
 const My= {
   app: () => document.querySelector("#app"),
   browser: () => document.getElementById('app').getElementsByClassName('browser')[0] ,
   
   //MainWrapper stuff (element class two)----------------------------------------------------
   mainWrapper: () => document.querySelector('.two'),  
-    unkownSection1: () => document.querySelector('.two').childNodes[2],
-      unkownSection2: () => document.querySelector('.two').childNodes[2].childNodes[0],  
-    overlayMenus: () => document.querySelector('.two').childNodes[3],
-      uploadPannel: () => document.querySelector('.two').childNodes[3].childNodes[1], //(to upload photos/videos/document)    
-      leftSettingPannel: () => document.querySelector('.two').childNodes[3].childNodes[0], // leftMenus (Settings, status, community, profile, ...)
-    chatList: () => document.querySelector('.two').childNodes[4],
-      chatListHeader: () => document.querySelector('.two').childNodes[4].querySelector('header').querySelector('header'),
-    chatWindow: () => document.querySelector('.two').childNodes[5],
-      chatHeader: () => document.querySelector('.two').childNodes[5].querySelector('header'),
-    contactInfo: () => document.querySelector('.two').childNodes[6],
+    unkownSection1: () => document.querySelector('.two').childNodes[indexChatList-2],
+      unkownSection2: () => document.querySelector('.two').childNodes[indexChatList-2].childNodes[0],  
+    overlayMenus: () => document.querySelector('.two').childNodes[indexChatList-1],
+      uploadPannel: () => document.querySelector('.two').childNodes[indexChatList-1].childNodes[1], //(to upload photos/videos/document)    
+      leftSettingPannel: () => document.querySelector('.two').childNodes[indexChatList-1].childNodes[0], // leftMenus (Settings, status, community, profile, ...)
+    chatList: () => document.querySelector('.two').childNodes[indexChatList],
+      chatListHeader: () => document.querySelector('.two').childNodes[indexChatList].querySelector('header').querySelector('header'),
+    chatWindow: () => document.querySelector('.two').childNodes[indexChatList+1],
+      chatHeader: () => document.querySelector('.two').childNodes[indexChatList+1].querySelector('header'),
+    contactInfo: () => document.querySelector('.two').childNodes[indexChatList+3],
   //-------------------------------------------------------------------------------------------
 
   upperWrapper: () => document.querySelector('.three'),
@@ -108,6 +112,27 @@ const My= {
   isAPossibleChatOpener: (el) => (el.closest("[role=listitem]") != null)
 };
 
+
+function findIndexChatList()
+{
+  const parent = document.querySelector('.two');
+indexChatList =
+  parent &&
+  (() => {
+    const grid = parent.querySelector('[role="grid"]');
+    if (!grid) return -1;
+
+    let child = grid;
+
+    while (child.parentElement !== parent) {
+      child = child.parentElement;
+      if (!child) return -1;
+    }
+
+    return Array.from(parent.children).indexOf(child) ;
+  })();
+  console.log("Index Chat List:"+indexChatList);
+}
 
 
 //----------------------------------------------s--------------------------------------------------
@@ -737,6 +762,9 @@ const observer = new MutationObserver((mutationsList) => {
   for (const mutation of mutationsList) {
     // On regarde uniquement les ajouts et suppressions d'enfants
     if (mutation.type === 'childList') {
+      
+      if ( My.mainWrapper() !== null && mainWrapperExisted == false )
+          findIndexChatList();
       
       if (My.mainWrapper() !== null && mainWrapperExisted == false && ! My.chatListHeader().querySelector('.added_menu_button') ) {
         main();
