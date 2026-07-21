@@ -232,6 +232,7 @@ function main(){
         addCss('main { width: 100% !important; height: 100%; padding: 0 !important; position: fixed; left:0; top: 0; border-radius:0 !important; padding-left:5%; } '); 
         addCss(".customDialog { transform: scaleX(0.8) scaleY(0.8) !important; transition: transform 0.3s ease !important; }");
         addCss('.customDialog[role="menu"] { transform: scaleX(1.1) scaleY(1.1) !important; transition: transform 0.3s ease !important; }');
+        addCss('.customDialog[data-testid="media-gallery"] { transform: scaleX(1.1) scaleY(1.1) !important; transition: transform 0.3s ease !important; }');        
         addCss('.customDialog:has([direction="vertical"]) { transform: scaleX(0.55) scaleY(0.55) !important; padding-top: 5% !important; padding-left: 5% !important; height: 180% !important; }');
          addCss('[data-animate-modal-body="true"]:has([direction="vertical"]) > * { height: 100% !important; } ');
          addCss(".emojiDialog { width: 95% !important; left:2% !important; }"); 
@@ -247,87 +248,13 @@ function main(){
         addCss('[data-testid="conversation-header"] .html-button { width: 25px !important; }');
     } catch (e) { console.log("Error while applying css: "+e) }
 
-  // Listener prioritaire pour Enter
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') {
-    if( My.leftSettingPannel().contains(lastClickEl) && lastClickEl.isContentEditable )
-    {
-    lastClickEl=null;
-    console.log("Stoping Enter propagation");
-    e.stopImmediatePropagation(); 
-    let text = lastFocusEl.innerText || lastFocusEl.textContent;
-    if ( text.charAt(text.length - 1) === " " )
-    {
-              console.log("clean Search");
-              sent=0;
-              moveCursorRight()    
-                lastFocusEl.dispatchEvent(new KeyboardEvent('keydown', {
-                     key: 'Backspace',
-                     code: 'Backspace',
-                     bubbles: true
-                 }));
-                
-      }
-    }
-    console.log('Enter pressed, blur !');
-    lastFocusEl.blur();
-  }
-}, true); // <-- "true" pour écouter en phase capture (avant les listeners normaux)
-
-
-
    //--------------------------------------------------------------
    // SECTION2.1 Avoid opening the keyboard when entering a chat
   //              by listening to focusin
   //---------------------------------------------------------------
   document.body.addEventListener('focusin', (event) => {
     lastFocusEl = event.target;
-    
-    if ( lastFocusEl.isContentEditable )
-    {
-        var sent = 0;
-        var timeout;
-        
-        if ( editObserver != null )
-        editObserver.disconnect();
 
-        editObserver = new MutationObserver(() => {
-          clearTimeout(timeout);
-
-          timeout = setTimeout(() => {
-            const editableElement = lastFocusEl;
-            let text = editableElement.innerText || editableElement.textContent;
-            if ( ! text.includes(' ') &&  text.trim().length > 0 && sent ==0 )
-            {
-              console.log("Add space at the end");
-              document.execCommand("insertText", false, " ");
-              sent=1
-            }
-            if ( text.trim() === '' && sent === 1 )
-            {
-              console.log("clean 1");
-              sent=0;
-              moveCursorRight()    
-                editableElement.dispatchEvent(new KeyboardEvent('keydown', {
-                     key: 'Backspace',
-                     code: 'Backspace',
-                     bubbles: true
-                 }));
-                
-            }
-               
-          }, 100);
-        });
-
-        editObserver.observe(lastFocusEl, {
-          childList: true,
-          subtree: true,
-          characterData: true,
-          attributes: true
-        }); 
-      
-    }
-    
     if ( lastFocusEl.isContentEditable  && (!lastClickEl || ! lastClickEl.isContentEditable ) )
     {
       lastFocusEl.blur();
@@ -375,27 +302,6 @@ document.addEventListener('keydown', (e) => {
 //  SECTION3:   Click handler: this allows to intercept any click made by the user and do
 //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 //-----------------------------------------------------------------------------------------
-
-function moveCursorRight() {
-    const sel = window.getSelection();
-    if (!sel.rangeCount) return;
-
-    const range = sel.getRangeAt(0);
-    const node = range.startContainer;
-
-    if (node.nodeType === Node.TEXT_NODE) {
-        let offset = range.startOffset + 1;
-        offset = Math.min(offset, node.textContent.length);
-
-        const newRange = document.createRange();
-        newRange.setStart(node, offset);
-        newRange.collapse(true);
-
-        sel.removeAllRanges();
-        sel.addRange(newRange);
-    }
-}
-
 
 var editObserver=null;
 
