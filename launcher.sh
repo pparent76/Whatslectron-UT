@@ -57,21 +57,38 @@ if { [[ "$micstate" != *"microState=1"* ]] && [[ "$micstate" != *"microState=4"*
         done
 fi
 
-#Read micstate in conf
-while read p; do
-  if [[ "$p" == *"keyboardHeight="* ]]; then keyboardHeight="${p#keyboardHeight=}" ; fi
-done <  /home/phablet/.config/whatslectron.pparent/whatslectron.pparent/whatslectron.pparent.conf 
-    
-utils/rm.sh /home/phablet/.local/share/whatslectron.pparent/recently-used.xbel
-
 for file in /home/phablet/.cache/whatslectron.pparent/downloads/* ; do
     utils/rm.sh $file
 done
 
+appScaling=""
+#Read micstate in conf
+while read p; do
+  if [[ "$p" == *"keyboardHeight="* ]]; then keyboardHeight="${p#keyboardHeight=}" ; fi
+  if [[ "$p" == *"appScaling="* ]]; then appScaling="${p#appScaling=}" ; fi
+  if [[ "$p" == *"textFontSize="* ]]; then textFontSize="${p#textFontSize=}" ; fi  
+  if [[ "$p" == *"spanFontSize="* ]]; then spanFontSize="${p#spanFontSize=}" ; fi  
+done <  /home/phablet/.config/whatslectron.pparent/whatslectron.pparent/whatslectron.pparent.conf 
 
-scale=$(./utils/get-scale.sh 2>/dev/null )
+if [ "$appScaling" = "" ]; then
+    appScaling=$(./utils/get-scale.sh 2>/dev/null )
+    echo "[AppSettings]"  >> /home/phablet/.config/whatslectron.pparent/whatslectron.pparent/whatslectron.pparent.conf 
+    echo "appScaling=$appScaling" >> /home/phablet/.config/whatslectron.pparent/whatslectron.pparent/whatslectron.pparent.conf 
+    echo "defaultAppScaling=$appScaling" >> /home/phablet/.config/whatslectron.pparent/whatslectron.pparent/whatslectron.pparent.conf  
+fi
 
-dpioptions="--high-dpi-support=1 --force-device-scale-factor=$scale --keyboard-height=$keyboardHeight"
+scaling="$((appScaling / 100)).$(printf '%02d' "$((appScaling % 100))")"
+
+if [ "$textFontSize" = "" ]; then
+textFontSize=106
+fi
+
+if [ "$spanFontSize" = "" ]; then
+spanFontSize=107
+fi
+
+
+dpioptions="--high-dpi-support=1 --force-device-scale-factor=$scaling --keyboard-height=$keyboardHeight --text-font-size=$textFontSize --span-font-size=$spanFontSize"
 sandboxoptions="--no-sandbox"
 gpuoptions="--use-gl=egl --enable-gpu-rasterization --enable-zero-copy --ignore-gpu-blocklist --enable-features=UseSkiaRenderer,VaapiVideoDecoder --disable-frame-rate-limit --disable-gpu-vsync --enable-oop-rasterization"
 

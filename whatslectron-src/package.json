@@ -8,7 +8,7 @@
     "build:esbuild": "node scripts/esbuild.js"
   },
   "devDependencies": {
-    "electron": "42.3.3",
+    "electron": "43.1.1",
     "electron-builder": "26.11.1",
     "esbuild": "^0.19.0"
   },  

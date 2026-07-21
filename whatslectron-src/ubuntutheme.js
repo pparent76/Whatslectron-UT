@@ -135,6 +135,22 @@ indexChatList =
 }
 
 
+function showGear() {
+  const b = document.createElement("button");
+  b.id = "gear";
+  b.textContent = "⚙";
+  b.style.cssText =
+    "position:fixed;right:15px;top:5px;z-index:999999;width:60px;height:60px;font-size:30px;cursor:pointer; color:var(--WDS-content-action-default); ";
+  b.onclick = () => window.open("https://access-settings", "_blank");  
+  document.documentElement.appendChild(b);
+}
+
+function hideGear() {
+  document.querySelector("#gear")?.remove();
+}
+
+showGear();
+
 //----------------------------------------------s--------------------------------------------------
 //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // SECTION2:   Main() function that is called when it is detected that the main view has loaded
@@ -202,6 +218,8 @@ function main(){
 
   //Request by default webnofications permission
   Notification.requestPermission();
+  
+  hideGear();
 
 }
 
@@ -214,13 +232,13 @@ function main(){
         addCss(".customDialog { transform: scaleX(0.8) scaleY(0.8) !important; transition: transform 0.3s ease !important; }");
         addCss('.customDialog:has([direction="vertical"]) { transform: scaleX(0.55) scaleY(0.55) !important; padding-top: 5% !important; padding-left: 5% !important; height: 180% !important; }');
          addCss('[data-animate-modal-body="true"]:has([direction="vertical"]) > * { height: 100% !important; } ');
-        addCss(".emojiDialog { transform: scaleX(0.66) scaleY(0.66) !important; transition: transform 0.3s ease !important; transformOrigin = left bottom !important; left:2% !important; }"); 
+         addCss(".emojiDialog { transform: scaleX(0.66) scaleY(0.66) !important; transition: transform 0.3s ease !important; transformOrigin = left bottom !important; left:2% !important; }"); 
         addCss(".NavSidebar { transition: transform 0.25s ease-in-out !important }")
         addCss(".message-out {  padding-right: 20px !important; }");
         addCss(".message-in {  padding-left: 20px !important; }");  
         addCss(".focusable-list-item {  padding-left: 15px !important; padding-right: 15px !important; }");
-        addCss("span { font-size: "+107+"% !important; }");    
-        addCss(".copyable-text { font-size: "+106+"% !important; }");         
+        addCss("span { font-size: "+window.__cmdParams.spanFontSize+"% !important; }");    
+        addCss(".copyable-text { font-size: "+window.__cmdParams.textFontSize+"% !important; }");         
         addCss(".html-span { font-size: 96% !important; }");
         addCss('[data-animate-dropdown-item="true"] { left: 2vw !important ; } ');
         addCss('[data-testid="conversation-header"] .html-button { width: 25px !important; }');

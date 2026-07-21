@@ -163,7 +163,7 @@ for dep in $DEPENDENCIES ; do
     dpkg-deb -x "${dep}.deb" "${dep}.deb_extract_chsdjksd"
 done
 
-wget https://launchpad.net/ubuntu/+source/coreutils/9.4-3ubuntu6/+build/28027146/+files/coreutils_9.4-3ubuntu6_arm64.deb
+wget https://ports.ubuntu.com/pool/main/c/coreutils/coreutils_9.4-3ubuntu6_arm64.deb
 rm -rvf "coreutils_9.4-3ubuntu6_arm64.deb_extract_chsdjksd" || true
 mkdir "coreutils_9.4-3ubuntu6_arm64.deb_extract_chsdjksd"
 dpkg-deb -x "coreutils_9.4-3ubuntu6_arm64.deb" "coreutils_9.4-3ubuntu6_arm64.deb_extract_chsdjksd"
@@ -284,6 +284,9 @@ mkdir -p $INSTALL_DIR/utils/upload-helper/Pparent/UploadHelper
 cp ${BUILD_DIR}/upload-helper/qml-upload-helper-module/build/libUploadHelperPlugin.so $INSTALL_DIR/utils/upload-helper/Pparent/UploadHelper/
 cp ${BUILD_DIR}/upload-helper/qml-upload-helper-module/qmldir $INSTALL_DIR/utils/upload-helper/Pparent/UploadHelper/
 
+
+mkdir $INSTALL_DIR/utils/settings/
+cp -r ${ROOT}/utils/settings/* $INSTALL_DIR/utils/settings/
 
 cp -r ${ROOT}/utils/mic-permission-requester "$INSTALL_DIR/utils/"
 cp ${ROOT}/icon.png "$INSTALL_DIR/utils/mic-permission-requester/"

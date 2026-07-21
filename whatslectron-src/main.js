@@ -10,7 +10,7 @@ const { basename, extname } = require('node:path');
 
 const USER_AGENT =
   'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 ' +
-  '(KHTML, like Gecko) Chrome/148.0.0.0 Safari/537.36';
+  '(KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36';
 
 // Active explicitement les événements tactiles
 app.commandLine.appendSwitch('touch-events', 'enabled');
@@ -95,6 +95,8 @@ function createWindow() {
       const params = {
           keyboardHeight: app.commandLine.getSwitchValue('keyboard-height'),
           forceScale: app.commandLine.getSwitchValue('force-device-scale-factor'),
+          textFontSize: app.commandLine.getSwitchValue('text-font-size'),
+          spanFontSize: app.commandLine.getSwitchValue('span-font-size'),
       };
  
       console.log("!!!!!!!!test!!!!!!!!!!!!!!!!!");
