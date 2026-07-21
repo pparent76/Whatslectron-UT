@@ -26,6 +26,36 @@ function safeFilename(name) {
     .trim();
 }
 
+async function loadInitialPage(win) {
+  const load = async () => {
+    let timer;
+
+    try {
+      await Promise.race([
+        win.loadURL('https://web.whatsapp.com'),
+        new Promise((_, reject) => {
+          timer = setTimeout(() => {
+            win.webContents.stop();
+            reject(new Error('Timeout'));
+          }, 7_000);
+        })
+      ]);
+
+      clearTimeout(timer);
+      return true;
+    } catch (err) {
+      clearTimeout(timer);
+      console.error('[load]', err.message);
+      return false;
+    }
+  };
+
+  if (await load()) return;
+  if (await load()) return;
+
+  await win.loadFile(path.join(__dirname, 'load-error.html'));
+}
+
 function createWindow() {
   const win = new BrowserWindow({
     autoHideMenuBar: true,
@@ -40,6 +70,13 @@ function createWindow() {
       nodeIntegration: false,
       sandbox: false,
     }
+  });
+  
+  win.webContents.on('will-navigate', (event, url) => {
+  if (url === 'https://retry.local/') {
+    event.preventDefault();
+    loadInitialPage(win);
+  }
   });
   
   win.webContents.session.on('will-download', (event, item) => {
@@ -101,10 +138,12 @@ function createWindow() {
  
       console.log("!!!!!!!!test!!!!!!!!!!!!!!!!!");
       console.log(`${JSON.stringify(params)}`);
-      injectableCode = `
-      window.__cmdParams = ${JSON.stringify(params)};
+      const injectableCode = `
+      if (window.location.hostname === 'web.whatsapp.com') {
+          window.__cmdParams = ${JSON.stringify(params)};
 
-      ${jsCode}
+          ${jsCode}
+        }
       `;
 
       // Injecter le script utilisateur
@@ -119,7 +158,7 @@ function createWindow() {
       
   
   win.webContents.setUserAgent(USER_AGENT);
-  win.loadURL('https://web.whatsapp.com');
+  loadInitialPage(win);
   
   session.defaultSession.setPermissionRequestHandler((webContents, permission, callback, details) => {
     if (permission === 'notifications') {

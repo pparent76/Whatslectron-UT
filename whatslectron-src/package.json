@@ -22,7 +22,8 @@
         "main.js",
         "preload.js",
         "ubuntutheme.js",
-        "package.json"
+        "package.json",
+        "load-error.html"
     ],
     "mac": {
       "target": "dmg"
