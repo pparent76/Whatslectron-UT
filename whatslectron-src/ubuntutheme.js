@@ -225,25 +225,36 @@ function main(){
 
 
   
-  // //Adapt fontsize
      try {
-       //Handle lock screen
+        //Adjust messages margins
         addCss(".focusable-list-item {  padding-left: 15px !important; padding-right: 15px !important; }");
+      
+         //Main stuff
         addCss('main { width: 100% !important; height: 100%; padding: 0 !important; position: fixed; left:0; top: 0; border-radius:0 !important; padding-left:5%; } '); 
+        addCss(".NavSidebar { transition: transform 0.25s ease-in-out !important }")
+        
+        //Resize dialogs
         addCss(".customDialog { transform: scaleX(0.8) scaleY(0.8) !important; transition: transform 0.3s ease !important; }");
         addCss('.customDialog[role="menu"] { transform: scaleX(1.1) scaleY(1.1) !important; transition: transform 0.3s ease !important; }');
         addCss('.customDialog[data-testid="media-gallery"] { transform: scaleX(1.1) scaleY(1.1) !important; transition: transform 0.3s ease !important; }');        
         addCss('.customDialog:has([direction="vertical"]) { transform: scaleX(0.55) scaleY(0.55) !important; padding-top: 5% !important; padding-left: 5% !important; height: 180% !important; }');
          addCss('[data-animate-modal-body="true"]:has([direction="vertical"]) > * { height: 100% !important; } ');
+        addCss('[data-testid="media-canvas"] { width : 24vw !important; }');
+         
+         //Adjust emoji panel size
          addCss(".emojiDialog { width: 95% !important; left:2% !important; }"); 
          addCss('[data-testid="reaction_emoji_picker"] { width: 95vw !important; left:2% !important; }'); 
           addCss('[data-testid="reaction_emoji_picker"]  > * { --x-width: 95vw !important; }'); 
-        addCss(".NavSidebar { transition: transform 0.25s ease-in-out !important }")
+        
+        //Old code might be suppressed later
         addCss(".message-out {  padding-right: 20px !important; }");
         addCss(".message-in {  padding-left: 20px !important; }");  
+        
+        //Font size
         addCss("span { font-size: "+window.__cmdParams.spanFontSize+"% !important; }");    
         addCss(".copyable-text { font-size: "+window.__cmdParams.textFontSize+"% !important; }");         
         addCss(".html-span { font-size: 96% !important; }");
+        
         addCss('[data-animate-dropdown-item="true"] { left: 2vw !important ; } ');
         addCss('[data-testid="conversation-header"] .html-button { width: 25px !important; }');
     } catch (e) { console.log("Error while applying css: "+e) }
