@@ -288,6 +288,9 @@ cp ${BUILD_DIR}/upload-helper/qml-upload-helper-module/qmldir $INSTALL_DIR/utils
 mkdir $INSTALL_DIR/utils/settings/
 cp -r ${ROOT}/utils/settings/* $INSTALL_DIR/utils/settings/
 
+mkdir $INSTALL_DIR/utils/notifications-howto/
+cp -r ${ROOT}/utils/notifications-howto/* $INSTALL_DIR/utils/notifications-howto/
+
 cp -r ${ROOT}/utils/mic-permission-requester "$INSTALL_DIR/utils/"
 cp ${ROOT}/icon.png "$INSTALL_DIR/utils/mic-permission-requester/"
 

@@ -55,7 +55,7 @@
 
 //---------------------------------------------------------------
 //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-//  SECTION1:   Layer of abstraction for WhatsApp web page
+//  SECTION0:   Layer of abstraction for WhatsApp web page
 //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 //---------------------------------------------------------------
 
@@ -112,7 +112,6 @@ const My= {
   isAPossibleChatOpener: (el) => (el.closest("[role=listitem]") != null)
 };
 
-
 function findIndexChatList()
 {
   const parent = document.querySelector('.two');
@@ -135,6 +134,12 @@ indexChatList =
 }
 
 
+//-------------------------------------------------------------------------
+//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//  SECTION0: Initial overlays ( Settings gear, and Notifications howto)
+//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//-------------------------------------------------------------------------
+
 function showGear() {
   const b = document.createElement("button");
   b.id = "gear";
@@ -149,6 +154,73 @@ function hideGear() {
   document.querySelector("#gear")?.remove();
 }
 
+function showNotificationMessage() {
+  const box = document.createElement("div");
+  box.id = "notification-message";
+
+  box.style.cssText = `
+    position: fixed;
+    left: 50%;
+    bottom: 24px;
+    transform: translateX(-50%);
+    z-index: 999999;
+    text-align: center;
+    font-family: sans-serif;
+    color: var(--WDS-content-action-default);
+  `;
+
+  const bell = document.createElement("div");
+  bell.innerHTML = `
+  <center>
+    <svg
+      width="28"
+      height="28"
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+      fill="currentColor"
+    >
+      <path d="M12 22a2.5 2.5 0 0 0 2.45-2h-4.9A2.5 2.5 0 0 0 12 22Zm7-6v-5a7 7 0 0 0-5-6.71V3a2 2 0 0 0-4 0v1.29A7 7 0 0 0 5 11v5l-2 2v1h18v-1l-2-2Z"/>
+    </svg>
+  </center>
+  `;
+  bell.style.cssText = `
+    margin-bottom: 8px;
+    line-height: 0;
+    color: var(--WDS-content-action-default);
+  `;
+
+  const text = document.createElement("div");
+  text.textContent = "This application supports notifications";
+  text.style.cssText = `
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 1.4;
+  `;
+
+  const link = document.createElement("a");
+  link.textContent = "show me how!";
+  link.href = "https://access-notifications-howto";
+  link.target = "_blank";
+  link.rel = "noopener noreferrer";
+  link.style.cssText = `
+    display: block;
+    margin-top: 4px;
+    color: #37a5e8;
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 1.4;
+    text-decoration: underline;
+  `;
+
+  box.append(bell, text, link);
+  document.documentElement.appendChild(box);
+}
+
+function hideNotificationMessage() {
+  document.querySelector("#notification-message")?.remove();
+}
+
+showNotificationMessage();
 showGear();
 
 //----------------------------------------------s--------------------------------------------------
@@ -160,6 +232,7 @@ function main(){
   console.log("Call main function")
   
   hideGear();
+  hideNotificationMessage();
     
   My.overlayMenus().style.width="0";
   showchatlist();  
@@ -682,7 +755,8 @@ var checkExist = setInterval(function() {
       My.loginView().style.paddingLeft= "5%";
       My.linkedDevicesInstructions().parentElement.parentElement.style.transformOrigin="left";
       My.linkedDevicesInstructions().parentElement.parentElement.style.transform="scaleX(0.8) scaleY(0.8)";
-      console.log("[HideAppControls]")
+      hideGear();
+      hideNotificationMessage();
     }
     if (My.mainWrapper().childNodes.length) {
       if ( check == 0 ) {

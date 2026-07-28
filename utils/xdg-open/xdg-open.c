@@ -38,6 +38,21 @@ int main(int argc, char *argv[])
 
         return 0;
    }
+   
+   if (g_str_has_prefix(url,  "https://access-notifications-howto")){
+               GError *error = NULL;
+
+        if (!g_spawn_command_line_async(
+                "qmlscene /opt/click.ubuntu.com/whatslectron.pparent/current/utils/notifications-howto/NotificationsHowto.qml",
+                &error)) {
+            fprintf(stderr, "Failed to launch qmlscene: %s\n", error->message);
+            g_error_free(error);
+            return 1;
+        }
+
+        return 0;
+   }   
+   
     GError *error = NULL;
 
     GDBusConnection *bus = g_bus_get_sync(G_BUS_TYPE_SESSION, NULL, &error);

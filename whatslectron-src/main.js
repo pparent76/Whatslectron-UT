@@ -69,6 +69,7 @@ function createWindow() {
       contextIsolation: false, // selon ton setup existant
       nodeIntegration: false,
       sandbox: false,
+      backgroundThrottling: true,
     }
   });
   
