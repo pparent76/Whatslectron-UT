@@ -30,11 +30,27 @@ fi
 export PATH=$PWD/bin:$PATH
 utils/mkdir.sh /home/phablet/.cache/whatslectron.pparent/
 
+##################################################################################################
+#Temporary hack to recalibrate Keyboard height for users that have recently migrated to 24.04-2.0
+##################################################################################################
+while read p; do
+  if [[ "$p" == *"hasUpdateTo240420="* ]]; then  hasUpdateTo240420=$p; fi
+done <  /home/phablet/.config/whatslectron.pparent/whatslectron.pparent/whatslectron.pparent.conf 
+
+echo "2e5ac3f9522ed7ec26105aa327d16f21  /lib/aarch64-linux-gnu/liblomiri-private.so"| md5sum -c -
+if [ "$?" -eq "0" ]&& [ "$hasUpdateTo240420" = "" ]; then
+        utils/rm.sh /home/phablet/.config/whatslectron.pparent/whatslectron.pparent/whatslectron.pparent.conf 
+        echo "[UpdateSettings]"  > /home/phablet/.config/whatslectron.pparent/whatslectron.pparent/whatslectron.pparent.conf 
+        echo "hasUpdateTo240420=yes" >> /home/phablet/.config/whatslectron.pparent/whatslectron.pparent/whatslectron.pparent.conf 
+fi
+##################################################################################################
+
 #Read micstate in conf
 while read p; do
   if [[ "$p" == *"microState="* ]]; then  micstate=$p; fi
   if [[ "$p" == *"keyboardHeight="* ]]; then   keyboardHeight="${p#keyboardHeight=}" ; fi
 done <  /home/phablet/.config/whatslectron.pparent/whatslectron.pparent/whatslectron.pparent.conf 
+
 
 
 if { [[ "$micstate" != *"microState=1"* ]] && [[ "$micstate" != *"microState=4"* ]]; } || \
