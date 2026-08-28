@@ -1,7 +1,7 @@
 [Desktop Entry]
 Name=Whatsnew
 Comment=Whatsnew Launcher
-Exec=./launcher.sh
+Exec=./launcher.sh %u
 Terminal=false
 Type=Application
 Icon=icon.png

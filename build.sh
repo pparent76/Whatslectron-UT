@@ -86,6 +86,13 @@ cd build
 cmake ..
 make
 
+rm -rvf  ${BUILD_DIR}/restart-app/
+cp -r ${ROOT}/utils/restart-app/ ${BUILD_DIR}/
+cd ${BUILD_DIR}/restart-app/
+unset PKG_CONFIG_PATH
+export PKG_CONFIG_LIBDIR=/usr/lib/aarch64-linux-gnu/pkgconfig:/usr/share/pkgconfig
+aarch64-linux-gnu-gcc -Wall -Wextra restart-app.c -o restart-app $(pkg-config --cflags --libs gio-2.0)
+
 # ===================================
 # STEP 4: BUILD QML modules
 # ===================================
@@ -254,6 +261,7 @@ cp ${ROOT}/pushexec "$INSTALL_DIR/"
 cp ${ROOT}/push-apparmor.json "$INSTALL_DIR/"
 cp ${ROOT}/whatslectron-push.apparmor "$INSTALL_DIR/"
 cp ${ROOT}/whatslectron-push-helper.json "$INSTALL_DIR/"
+cp ${ROOT}/whatslectron.url-dispatcher "$INSTALL_DIR/"
 
 echo "Copying libnotify"
 cp ${BUILD_DIR}/libnotify/libnotify-0.8.3/obj-aarch64-linux-gnu/libnotify/* $INSTALL_DIR/lib/aarch64-linux-gnu/ || true
@@ -267,6 +275,8 @@ cp ${ROOT}/utils/get-scale.sh "$INSTALL_DIR/utils/"
 cp ${ROOT}/utils/select-file.sh "$INSTALL_DIR/utils/"
 cp ${BUILD_DIR}/xdg-open/build/xdg-open $INSTALL_DIR/bin/
 cp ${BUILD_DIR}/placeholder-killer/build/placeholder-killer $INSTALL_DIR/bin/
+mkdir -p $INSTALL_DIR/utils/restart-app/
+cp ${BUILD_DIR}/restart-app/restart-app $INSTALL_DIR/utils/restart-app/
 mkdir $INSTALL_DIR/utils/download-helper/
 cp -r ${BUILD_DIR}/download-helper/qml $INSTALL_DIR/utils/download-helper/
 mkdir -p $INSTALL_DIR/utils/download-helper/Pparent/DownloadHelper

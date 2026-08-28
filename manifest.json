@@ -7,14 +7,15 @@
     "hooks": {
         "whatslectron": {
             "apparmor": "whatslectron.apparmor",
-            "desktop":  "whatslectron.desktop"
+            "desktop":  "whatslectron.desktop",
+            "urls": "whatslectron.url-dispatcher"
         },
         "push": {
             "apparmor": "whatslectron-push.apparmor",
             "push-helper": "whatslectron-push-helper.json"
         }
     },
-    "version": "0.1.11",
+    "version": "0.2.0",
     "maintainer": "Pierre Parent <pro@pierre-parent.fr>",
     "framework" : "ubuntu-touch-24.04-1.x"
 }

@@ -7,6 +7,7 @@ const { execFile } = require('node:child_process');
 const { readFile, stat } = require('node:fs/promises');
 const { basename, extname } = require('node:path');
 
+app.setDesktopName("whatslectron.pparent");
 
 const USER_AGENT =
   'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 ' +
@@ -243,7 +244,9 @@ function createWindow() {
     
 }
 
+
 app.whenReady().then(createWindow);
+
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {

@@ -17,20 +17,23 @@ MainView {
     Component.onCompleted: {
         config.microState=0
     }
-    visible: Qt.application.active
-    
-    onVisibleChanged: {
-        if ( Qt.application.active == false && pushed == true)
-        {
-        Qt.quit()  
-        }
-    }
 
 
     AudioWriter {
     id:w
     }
 
+    Timer {
+        id: killTimer
+        interval: 2000       
+        repeat: false         
+        running: false         
+
+        onTriggered: {
+          Qt.exit(5)
+        }
+    }
+    
     Timer {
         id: myTimer
         interval: 1000       // 1000 ms = 1 seconde
@@ -42,8 +45,9 @@ MainView {
            {
                pushed=true;
                button1.visible=false;
-               overlayText.text="Whatsapp is starting..."
+               overlayText.text="Whatsapp will be shortly starting,\n please wait..."
                config.microState=4
+               killTimer.start()
            }
         }
     }
@@ -193,6 +197,7 @@ MainView {
                             button2.visible=false
                             button3.visible=false
                             textMic.visible=false
+                            textInfo.visible=false
                             config.microState=3
                             myTimer.running=true
                         }
@@ -215,6 +220,8 @@ MainView {
                             button2.visible=false
                             button3.visible=false
                             textMic.visible=false
+                            textInfo.visible=false
+                            killTimer.start()
                         }
                         anchors.horizontalCenter: parent.horizontalCenter
                     }
@@ -235,6 +242,8 @@ MainView {
                             button2.visible=false
                             button3.visible=false   
                             textMic.visible=false
+                            textInfo.visible=false
+                            killTimer.start()
                         }
                         anchors.horizontalCenter: parent.horizontalCenter
                         
@@ -303,7 +312,7 @@ MainView {
                     Text {
                         id: overlayText
                         visible: false
-                        text: "Whatsapp is starting..."
+                        text: "Whatsapp will be shortly starting,\n please wait..."
                         color: "white"
                         font.pixelSize: units.gu(2.5)
                         horizontalAlignment: Text.AlignHCenter
@@ -311,6 +320,18 @@ MainView {
                         anchors.horizontalCenter: parent.horizontalCenter
                     }
                 }
+                
+            
+            Label {
+                    id: textInfo
+                    text: "<b>Note:</b> if you allow mircophone, you will be able to change permission later,\n from system settings"
+                    horizontalAlignment: Text.AlignHCenter
+                    color: "white"
+                    font.pixelSize: units.gu(2.0)
+                    wrapMode: Text.WordWrap
+                    width: units.gu(35)
+                    anchors.horizontalCenter: parent.horizontalCenter
+                }   
             }
         }
 
