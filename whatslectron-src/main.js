@@ -11,7 +11,7 @@ app.setDesktopName("whatslectron.pparent");
 
 const USER_AGENT =
   'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 ' +
-  '(KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36';
+  '(KHTML, like Gecko) Chrome/152.0.0.0 Safari/537.36';
 
 // Active explicitement les événements tactiles
 app.commandLine.appendSwitch('touch-events', 'enabled');
