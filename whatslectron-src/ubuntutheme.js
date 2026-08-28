@@ -145,7 +145,7 @@ function showGear() {
   b.id = "gear";
   b.textContent = "⚙";
   b.style.cssText =
-    "position:fixed;right:15px;top:5px;z-index:999999;width:60px;height:60px;font-size:30px;cursor:pointer; color:var(--WDS-content-action-default); ";
+    "position:fixed;right:15px;top:5px;z-index:999999;width:60px;height:60px;font-size:30px;cursor:pointer; color:var(--WDS-content-action-default);opacity: 0.7;";
   b.onclick = () => window.open("https://access-settings", "_blank");  
   document.documentElement.appendChild(b);
 }
@@ -167,6 +167,7 @@ function showNotificationMessage() {
     text-align: center;
     font-family: sans-serif;
     color: var(--WDS-content-action-default);
+    opacity: 0.7;
   `;
 
   const bell = document.createElement("div");
@@ -187,6 +188,7 @@ function showNotificationMessage() {
     margin-bottom: 8px;
     line-height: 0;
     color: var(--WDS-content-action-default);
+    opacity: 0.7;
   `;
 
   const text = document.createElement("div");
@@ -195,6 +197,7 @@ function showNotificationMessage() {
     font-size: 16px;
     font-weight: 400;
     line-height: 1.4;
+    opacity: 0.7;
   `;
 
   const link = document.createElement("a");
@@ -210,6 +213,7 @@ function showNotificationMessage() {
     font-weight: 400;
     line-height: 1.4;
     text-decoration: underline;
+    opacity: 0.7;
   `;
 
   box.append(bell, text, link);
