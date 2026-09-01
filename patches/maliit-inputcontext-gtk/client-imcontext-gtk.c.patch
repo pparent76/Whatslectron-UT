@@ -63,7 +63,7 @@ index e26ce37..641ba9e 100644
  
  static GType _maliit_im_context_type = 0;
  static GtkIMContextClass *parent_class = NULL;
-@@ -339,6 +393,8 @@
+@@ -339,6 +393,8 @@ maliit_im_context_init(MaliitIMContext *
  static void
  maliit_im_context_focus_in(GtkIMContext *context)
  {
@@ -72,7 +72,7 @@ index e26ce37..641ba9e 100644
      MaliitIMContext *im_context = MALIIT_IM_CONTEXT(context);
      gboolean focus_changed = TRUE;
      GError *error = NULL;
-@@ -378,6 +434,8 @@
+@@ -378,6 +434,8 @@ maliit_im_context_focus_in(GtkIMContext
          g_clear_error(&error);
      }
  
@@ -81,7 +81,7 @@ index e26ce37..641ba9e 100644
      // TODO: anything else than call "activateContext" and "showInputMethod" ?
  }
  
-@@ -524,6 +582,7 @@
+@@ -524,6 +582,7 @@ maliit_im_context_reset(GtkIMContext *co
  static void
  maliit_im_context_get_preedit_string(GtkIMContext *context, gchar **str, PangoAttrList **attrs, gint *cursor_pos)
  {
@@ -89,7 +89,7 @@ index e26ce37..641ba9e 100644
      MaliitIMContext *im_context = MALIIT_IM_CONTEXT(context);
  
      if (!maliit_is_running()) {
-@@ -712,6 +771,34 @@
+@@ -712,6 +771,34 @@ maliit_im_context_im_initiated_hide(Mali
      return FALSE;
  }
  
@@ -124,7 +124,7 @@ index e26ce37..641ba9e 100644
  gboolean
  maliit_im_context_commit_string(MaliitContext *obj,
                                GDBusMethodInvocation *invocation,
-@@ -724,6 +811,20 @@
+@@ -724,6 +811,20 @@ maliit_im_context_commit_string(MaliitCo
      DBG("string is:%s", string);
  
      MaliitIMContext *im_context = MALIIT_IM_CONTEXT(user_data);
@@ -145,7 +145,7 @@ index e26ce37..641ba9e 100644
      if (im_context != focused_im_context)
          return FALSE;
  
-@@ -734,9 +835,13 @@
+@@ -734,9 +835,13 @@ maliit_im_context_commit_string(MaliitCo
          g_signal_emit_by_name(focused_im_context, "preedit-changed");
          g_signal_emit_by_name(focused_im_context, "commit", string);
          maliit_context_complete_commit_string(obj, invocation);
@@ -160,14 +160,13 @@ index e26ce37..641ba9e 100644
      return FALSE;
  }
  
-@@ -799,6 +904,25 @@
+@@ -799,6 +904,24 @@ maliit_im_context_update_preedit(MaliitC
      DBG("im_context = %p string = %s cursorPos = %d", im_context, string, cursorPos);
  
      if (focused_im_context) {
 +        
-+         if (strlen(string)>0 && ( !im_context->preedit_str || strlen(im_context->preedit_str)==0 ) &&  g_get_real_time()-ts_last_back_rst< 400000  )
++         if (strlen(string)>0 && ( !im_context->preedit_str || strlen(im_context->preedit_str)==0 ) && ( strlen(string)>1 || g_get_real_time()-ts_last_back_rst< 350000 ) )
 +         {
-+           ts_last_back_rst=0;
 +           return TRUE;
 +         }
 +        
@@ -186,7 +185,7 @@ index e26ce37..641ba9e 100644
          guint iter;
          PangoAttrList* attrs;
  
-@@ -896,13 +1020,36 @@
+@@ -896,13 +1019,36 @@ maliit_im_context_key_event(MaliitContex
  
      if (focused_im_context)
          window = focused_im_context->client_window;
@@ -219,8 +218,8 @@ index e26ce37..641ba9e 100644
 +    }
 +
      event->send_event = TRUE;
--    event->state |= IM_FORWARD_MASK;
-+    event->state |= IM_FORWARD_MASK;  
+     event->state |= IM_FORWARD_MASK;
+
  
      gdk_event_put((GdkEvent *)event);
      gdk_event_free((GdkEvent *)event);
