@@ -2,7 +2,7 @@ diff --git a/gtk-input-context/client-gtk/client-imcontext-gtk.c b/gtk-input-con
 index e26ce37..641ba9e 100644
 --- a/gtk-input-context/client-gtk/client-imcontext-gtk.c
 +++ b/gtk-input-context/client-gtk/client-imcontext-gtk.c
-@@ -32,6 +32,59 @@
+@@ -32,6 +32,60 @@
  #include "client-imcontext-gtk.h"
  #include "qt-gtk-translate.h"
  #include "debug.h"
@@ -56,13 +56,14 @@ index e26ce37..641ba9e 100644
 +    }
 +}
 +
-+
++static gint64 ts_last_back_rst = 0;
++static int needToReset=0;
 +static gboolean getstring_called=0;
 +static gboolean nopreedit_detected = FALSE;
  
  static GType _maliit_im_context_type = 0;
  static GtkIMContextClass *parent_class = NULL;
-@@ -339,6 +392,8 @@
+@@ -339,6 +393,8 @@
  static void
  maliit_im_context_focus_in(GtkIMContext *context)
  {
@@ -71,7 +72,7 @@ index e26ce37..641ba9e 100644
      MaliitIMContext *im_context = MALIIT_IM_CONTEXT(context);
      gboolean focus_changed = TRUE;
      GError *error = NULL;
-@@ -378,6 +433,8 @@
+@@ -378,6 +434,8 @@
          g_clear_error(&error);
      }
  
@@ -80,7 +81,7 @@ index e26ce37..641ba9e 100644
      // TODO: anything else than call "activateContext" and "showInputMethod" ?
  }
  
-@@ -524,6 +581,7 @@
+@@ -524,6 +582,7 @@
  static void
  maliit_im_context_get_preedit_string(GtkIMContext *context, gchar **str, PangoAttrList **attrs, gint *cursor_pos)
  {
@@ -88,7 +89,7 @@ index e26ce37..641ba9e 100644
      MaliitIMContext *im_context = MALIIT_IM_CONTEXT(context);
  
      if (!maliit_is_running()) {
-@@ -712,6 +770,23 @@
+@@ -712,6 +771,34 @@
      return FALSE;
  }
  
@@ -108,11 +109,22 @@ index e26ce37..641ba9e 100644
 +    return G_SOURCE_REMOVE;  // équivalent à FALSE
 +}
 +
++static guint reset_watchdog_id = 0;
++gboolean reset_timer_callback(gpointer data)
++{
++    MaliitIMContext *context = MALIIT_IM_CONTEXT(GTK_IM_CONTEXT(data));
++    DBG("RESET TIMER");
++    g_free(context->preedit_str);
++    context->preedit_str = g_strdup("");
++    context->preedit_cursor_pos = 0;    
++    maliit_im_context_reset(GTK_IM_CONTEXT(context)); 
++    return G_SOURCE_REMOVE;  // équivalent à FALSE
++}
 +
  gboolean
  maliit_im_context_commit_string(MaliitContext *obj,
                                GDBusMethodInvocation *invocation,
-@@ -724,6 +799,20 @@
+@@ -724,6 +811,20 @@
      DBG("string is:%s", string);
  
      MaliitIMContext *im_context = MALIIT_IM_CONTEXT(user_data);
@@ -133,29 +145,31 @@ index e26ce37..641ba9e 100644
      if (im_context != focused_im_context)
          return FALSE;
  
-@@ -799,6 +888,38 @@
+@@ -734,9 +835,13 @@
+         g_signal_emit_by_name(focused_im_context, "preedit-changed");
+         g_signal_emit_by_name(focused_im_context, "commit", string);
+         maliit_context_complete_commit_string(obj, invocation);
++        if (string && (! *string || (g_unichar_isalpha(g_utf8_get_char(g_utf8_find_prev_char(string, string + strlen(string)))) || g_unichar_isspace(g_utf8_get_char(g_utf8_find_prev_char(string, string + strlen(string)))) ) ) )
++             maliit_im_context_reset(GTK_IM_CONTEXT(im_context));
++        else
++            needToReset=1;
+         return TRUE;
+     }
+-
++    
+     return FALSE;
+ }
+ 
+@@ -799,6 +904,25 @@
      DBG("im_context = %p string = %s cursorPos = %d", im_context, string, cursorPos);
  
      if (focused_im_context) {
 +        
-+         if (strlen(string)>1 && strlen(im_context->preedit_str)==0)
++         if (strlen(string)>0 && ( !im_context->preedit_str || strlen(im_context->preedit_str)==0 ) &&  g_get_real_time()-ts_last_back_rst< 400000  )
 +         {
-+            while (gdk_events_pending()) {
-+            gtk_main_iteration_do(FALSE);
-+                }
++           ts_last_back_rst=0;
++           return TRUE;
 +         }
-+        if (strlen(string)==0)
-+        {
-+            g_free(im_context->preedit_str);
-+            im_context->preedit_str = g_strdup("");
-+            im_context->preedit_cursor_pos = 0;
-+            while (gdk_events_pending()) {
-+            gtk_main_iteration_do(FALSE);
-+                }            
-+            maliit_im_context_reset(im_context);
-+        }
-+        
-+        DBG("STEP2 !!! im_context = %p string = %s cursorPos = %d", im_context, string, cursorPos);
 +        
 +        if ( nopreedit_detected == TRUE )
 +        {
@@ -172,7 +186,7 @@ index e26ce37..641ba9e 100644
          guint iter;
          PangoAttrList* attrs;
  
-@@ -896,13 +1017,18 @@
+@@ -896,13 +1020,36 @@
  
      if (focused_im_context)
          window = focused_im_context->client_window;
@@ -186,6 +200,24 @@ index e26ce37..641ba9e 100644
      if (!event)
          return FALSE;
  
++    if ( event->type == GDK_KEY_PRESS && event->keyval == XK_BackSpace ) 
++    {
++        if ( g_get_real_time()-ts_last_back_rst< 250000 )
++        {
++        return FALSE;
++        }
++        if ( needToReset==1 )
++        {
++        needToReset=0;
++        ts_last_back_rst=g_get_real_time();
++        }
++        
++    if (reset_watchdog_id != 0) 
++        g_source_remove(reset_watchdog_id);
++
++    reset_watchdog_id = g_timeout_add(500, reset_timer_callback, im_context);
++    }
++
      event->send_event = TRUE;
 -    event->state |= IM_FORWARD_MASK;
 +    event->state |= IM_FORWARD_MASK;  
