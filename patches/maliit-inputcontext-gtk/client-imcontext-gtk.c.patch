@@ -2,7 +2,7 @@ diff --git a/gtk-input-context/client-gtk/client-imcontext-gtk.c b/gtk-input-con
 index e26ce37..641ba9e 100644
 --- a/gtk-input-context/client-gtk/client-imcontext-gtk.c
 +++ b/gtk-input-context/client-gtk/client-imcontext-gtk.c
-@@ -32,6 +32,60 @@
+@@ -32,6 +32,61 @@
  #include "client-imcontext-gtk.h"
  #include "qt-gtk-translate.h"
  #include "debug.h"
@@ -58,12 +58,13 @@ index e26ce37..641ba9e 100644
 +
 +static gint64 ts_last_back_rst = 0;
 +static int needToReset=0;
++static int needToPreventBackspace=0;
 +static gboolean getstring_called=0;
 +static gboolean nopreedit_detected = FALSE;
  
  static GType _maliit_im_context_type = 0;
  static GtkIMContextClass *parent_class = NULL;
-@@ -339,6 +393,8 @@ maliit_im_context_init(MaliitIMContext *
+@@ -339,6 +394,8 @@ maliit_im_context_init(MaliitIMContext *
  static void
  maliit_im_context_focus_in(GtkIMContext *context)
  {
@@ -72,7 +73,7 @@ index e26ce37..641ba9e 100644
      MaliitIMContext *im_context = MALIIT_IM_CONTEXT(context);
      gboolean focus_changed = TRUE;
      GError *error = NULL;
-@@ -378,6 +434,8 @@ maliit_im_context_focus_in(GtkIMContext
+@@ -378,6 +435,8 @@ maliit_im_context_focus_in(GtkIMContext
          g_clear_error(&error);
      }
  
@@ -81,7 +82,16 @@ index e26ce37..641ba9e 100644
      // TODO: anything else than call "activateContext" and "showInputMethod" ?
  }
  
-@@ -524,6 +582,7 @@ maliit_im_context_reset(GtkIMContext *co
+@@ -494,6 +553,8 @@ maliit_im_context_reset(GtkIMContext *co
+ {
+     MaliitIMContext *im_context = MALIIT_IM_CONTEXT(context);
+     GError *error = NULL;
++    
++    needToReset=0;
+ 
+     if (!maliit_is_running())
+         return;
+@@ -524,6 +585,7 @@ maliit_im_context_reset(GtkIMContext *co
  static void
  maliit_im_context_get_preedit_string(GtkIMContext *context, gchar **str, PangoAttrList **attrs, gint *cursor_pos)
  {
@@ -89,7 +99,7 @@ index e26ce37..641ba9e 100644
      MaliitIMContext *im_context = MALIIT_IM_CONTEXT(context);
  
      if (!maliit_is_running()) {
-@@ -712,6 +771,34 @@ maliit_im_context_im_initiated_hide(Mali
+@@ -712,6 +774,34 @@ maliit_im_context_im_initiated_hide(Mali
      return FALSE;
  }
  
@@ -124,7 +134,7 @@ index e26ce37..641ba9e 100644
  gboolean
  maliit_im_context_commit_string(MaliitContext *obj,
                                GDBusMethodInvocation *invocation,
-@@ -724,6 +811,20 @@ maliit_im_context_commit_string(MaliitCo
+@@ -724,6 +814,20 @@ maliit_im_context_commit_string(MaliitCo
      DBG("string is:%s", string);
  
      MaliitIMContext *im_context = MALIIT_IM_CONTEXT(user_data);
@@ -145,14 +155,17 @@ index e26ce37..641ba9e 100644
      if (im_context != focused_im_context)
          return FALSE;
  
-@@ -734,9 +835,13 @@ maliit_im_context_commit_string(MaliitCo
+@@ -734,9 +838,16 @@ maliit_im_context_commit_string(MaliitCo
          g_signal_emit_by_name(focused_im_context, "preedit-changed");
          g_signal_emit_by_name(focused_im_context, "commit", string);
          maliit_context_complete_commit_string(obj, invocation);
 +        if (string && (! *string || (g_unichar_isalpha(g_utf8_get_char(g_utf8_find_prev_char(string, string + strlen(string)))) || g_unichar_isspace(g_utf8_get_char(g_utf8_find_prev_char(string, string + strlen(string)))) ) ) )
 +             maliit_im_context_reset(GTK_IM_CONTEXT(im_context));
 +        else
++        {
 +            needToReset=1;
++            needToPreventBackspace=1;
++        }
          return TRUE;
      }
 -
@@ -160,7 +173,7 @@ index e26ce37..641ba9e 100644
      return FALSE;
  }
  
-@@ -799,6 +904,24 @@ maliit_im_context_update_preedit(MaliitC
+@@ -799,6 +910,24 @@ maliit_im_context_update_preedit(MaliitC
      DBG("im_context = %p string = %s cursorPos = %d", im_context, string, cursorPos);
  
      if (focused_im_context) {
@@ -185,7 +198,7 @@ index e26ce37..641ba9e 100644
          guint iter;
          PangoAttrList* attrs;
  
-@@ -896,13 +1019,36 @@ maliit_im_context_key_event(MaliitContex
+@@ -896,11 +1025,34 @@ maliit_im_context_key_event(MaliitContex
  
      if (focused_im_context)
          window = focused_im_context->client_window;
@@ -201,25 +214,21 @@ index e26ce37..641ba9e 100644
  
 +    if ( event->type == GDK_KEY_PRESS && event->keyval == XK_BackSpace ) 
 +    {
++        if (reset_watchdog_id != 0) 
++            g_source_remove(reset_watchdog_id);
++    
++        if (needToReset)
++            reset_watchdog_id = g_timeout_add(500, reset_timer_callback, im_context);
++        
 +        if ( g_get_real_time()-ts_last_back_rst< 250000 )
++            return FALSE;
++        
++        if ( needToPreventBackspace==1 )
 +        {
-+        return FALSE;
-+        }
-+        if ( needToReset==1 )
-+        {
-+        needToReset=0;
++        needToPreventBackspace=0;
 +        ts_last_back_rst=g_get_real_time();
 +        }
-+        
-+    if (reset_watchdog_id != 0) 
-+        g_source_remove(reset_watchdog_id);
-+
-+    reset_watchdog_id = g_timeout_add(500, reset_timer_callback, im_context);
 +    }
 +
      event->send_event = TRUE;
      event->state |= IM_FORWARD_MASK;
-
- 
-     gdk_event_put((GdkEvent *)event);
-     gdk_event_free((GdkEvent *)event);
