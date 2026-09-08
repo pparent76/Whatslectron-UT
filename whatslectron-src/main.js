@@ -85,30 +85,36 @@ function createWindow() {
     screenshotView.setBounds({ x: 0, y: 0, width, height });
   };
 
-  const setWhatsAppViewVisible = async visible => {
-    if (visible === isWhatsAppViewAttached) return;
+ let setWhatsAppViewVisibleQueue = Promise.resolve();
 
-    resizeWhatsAppView();
-    
-    if (visible) {
-      whatsAppView.setVisible(true);
-      screenshotView.setVisible(false);
-    } else {
-      try {
+  const setWhatsAppViewVisible = visible => {
+    setWhatsAppViewVisibleQueue = setWhatsAppViewVisibleQueue.then(async () => {
+      resizeWhatsAppView();
+
+      if (visible) {
+        whatsAppView.setVisible(true);
+        screenshotView.setVisible(false);
+      } else {
+        try {
           const screenshot = await whatsAppContents.capturePage();
           const bounds = whatsAppView.getBounds();
+
           screenshotView.setBounds(bounds);
+
           const resized = screenshot.resize({
             width: bounds.width,
             height: bounds.height,
           });
+
           screenshotView.setImage(resized);
         } catch (error) {}
-        screenshotView.setVisible(true);  
-        whatsAppView.setVisible(false);
-    }
 
-    isWhatsAppViewAttached = visible;
+        screenshotView.setVisible(true);
+        whatsAppView.setVisible(false);
+      }
+    });
+
+    return setWhatsAppViewVisibleQueue;
   };
 
   win.contentView.addChildView(whatsAppView,0);
