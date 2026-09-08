@@ -1,4 +1,4 @@
-const { app, BrowserWindow, session, dialog, ipcMain } = require('electron');
+const { app, BrowserWindow, WebContentsView, session, dialog, ipcMain } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const { URL, pathToFileURL } = require('node:url');
@@ -27,16 +27,16 @@ function safeFilename(name) {
     .trim();
 }
 
-async function loadInitialPage(win) {
+async function loadInitialPage(webContents) {
   const load = async () => {
     let timer;
 
     try {
       await Promise.race([
-        win.loadURL('https://web.whatsapp.com'),
+        webContents.loadURL('https://web.whatsapp.com'),
         new Promise((_, reject) => {
           timer = setTimeout(() => {
-            win.webContents.stop();
+            webContents.stop();
             reject(new Error('Timeout'));
           }, 7_000);
         })
@@ -54,7 +54,7 @@ async function loadInitialPage(win) {
   if (await load()) return;
   if (await load()) return;
 
-  await win.loadFile(path.join(__dirname, 'load-error.html'));
+  await webContents.loadFile(path.join(__dirname, 'load-error.html'));
 }
 
 function createWindow() {
@@ -64,7 +64,9 @@ function createWindow() {
     height: 600,
     minWidth: 400,
     minHeight: 400,   
-    show: false,
+    show: true
+  });
+  const whatsAppView = new WebContentsView({
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: false, // selon ton setup existant
@@ -73,6 +75,29 @@ function createWindow() {
       backgroundThrottling: true,
     }
   });
+  const whatsAppContents = whatsAppView.webContents;
+  let isWhatsAppViewAttached = false;
+
+  const resizeWhatsAppView = () => {
+    const { width, height } = win.getContentBounds();
+    whatsAppView.setBounds({ x: 0, y: 0, width, height });
+  };
+
+  const setWhatsAppViewVisible = visible => {
+    if (visible === isWhatsAppViewAttached) return;
+
+    if (visible) {
+      win.contentView.addChildView(whatsAppView);
+      resizeWhatsAppView();
+    } else {
+      win.contentView.removeChildView(whatsAppView);
+    }
+
+    isWhatsAppViewAttached = visible;
+  };
+
+  setWhatsAppViewVisible(true);
+  win.on('resize', resizeWhatsAppView);
   
   let microphoneActive = false;
   let rendererRestartInProgress = false;
@@ -86,23 +111,23 @@ function createWindow() {
     microphoneActive = false;
     console.warn('[privacy] microphone active in background; restarting renderer');
 
-    win.webContents.once('render-process-gone', () => {
-      if (win.webContents.isDestroyed()) return;
+    whatsAppContents.once('render-process-gone', () => {
+      if (whatsAppContents.isDestroyed()) return;
 
-      win.webContents.reload();
+      whatsAppContents.reload();
       rendererRestartInProgress = false;
     });
-    win.webContents.forcefullyCrashRenderer();
+    whatsAppContents.forcefullyCrashRenderer();
   };
 
-  win.webContents.on('will-navigate', (event, url) => {
+  whatsAppContents.on('will-navigate', (event, url) => {
   if (url === 'https://retry.local/') {
     event.preventDefault();
-    loadInitialPage(win);
+    loadInitialPage(whatsAppContents);
   }
   });
   
-  win.webContents.session.on('will-download', (event, item) => {
+  whatsAppContents.session.on('will-download', (event, item) => {
   try {
     const filename = safeFilename(item.getFilename());
     const defaultPath = path.join(downloadDir, filename);
@@ -146,7 +171,7 @@ function createWindow() {
   }, "5000");
   });
   
-  win.webContents.on('dom-ready', () => {
+  whatsAppContents.on('dom-ready', () => {
   try {
 
       const userScriptPath = path.join(__dirname, 'ubuntutheme.js');
@@ -170,7 +195,7 @@ function createWindow() {
       `;
 
       // Injecter le script utilisateur
-      win.webContents.executeJavaScript(injectableCode)
+      whatsAppContents.executeJavaScript(injectableCode)
         .then(() => console.log('[main] ubuntutheme.js injected'))
         .catch(err => console.error('[main] failed to inject ubuntutheme.js', err));
 
@@ -180,8 +205,8 @@ function createWindow() {
   });
       
   
-  win.webContents.setUserAgent(USER_AGENT);
-  loadInitialPage(win);
+  whatsAppContents.setUserAgent(USER_AGENT);
+  loadInitialPage(whatsAppContents);
   
   session.defaultSession.setPermissionRequestHandler((webContents, permission, callback, details) => {
     if (permission === 'notifications') {
@@ -199,17 +224,35 @@ function createWindow() {
   });
     
     win.on('blur', () => {
-        win.webContents.setAudioMuted(true);
+        setWhatsAppViewVisible(false);
+        whatsAppContents.setAudioMuted(true);
         console.log('Audio coupé');
         if (microphoneActive) 
         {
           console.log('Microphone coupé');
           restartRendererForMicrophonePrivacy();
         }
+        
+          setTimeout(async () => {
+            try {
+              const result = await whatsAppContents.executeJavaScript(`
+                ({
+                  hidden: document.hidden,
+                  visibilityState: document.visibilityState
+                })
+              `);
+
+              console.log('visibility:', result);
+            } catch (error) {
+              console.error('Erreur lors de la récupération de la visibilité:', error);
+            }
+          }, 1000);
+    
     });
     
     win.on('minimize', () => {
-        win.webContents.setAudioMuted(true);
+        setWhatsAppViewVisible(false);
+        whatsAppContents.setAudioMuted(true);
         console.log('Audio coupé');
         if (microphoneActive) 
         {
@@ -219,7 +262,8 @@ function createWindow() {
     });    
 
     win.on('focus', () => {
-        win.webContents.setAudioMuted(false);
+        setWhatsAppViewVisible(true);
+        whatsAppContents.setAudioMuted(false);
         console.log('Audio activé');
     });
 
@@ -229,7 +273,7 @@ function createWindow() {
     
     
     //Handle external opening
-    win.webContents.setWindowOpenHandler(({ url }) => {
+    whatsAppContents.setWindowOpenHandler(({ url }) => {
         if (!url) {
           return { action: 'deny' };
         }
@@ -249,7 +293,7 @@ function createWindow() {
               width: 1000,
               height: 600,
               webPreferences: {
-                session: win.webContents.session, // share cookies
+                session: whatsAppContents.session, // share cookies
               }
             });
 
@@ -274,7 +318,7 @@ function createWindow() {
     ipcMain.on('microphone-state-changed', (event, active) => {
       
       console.warn('[privacy] microphone state changed: ',active);
-      if (event.sender !== win.webContents) return;
+      if (event.sender !== whatsAppContents) return;
 
       microphoneActive = active === true;
       if (microphoneActive && isInBackground()) {
@@ -368,5 +412,4 @@ ipcMain.handle('pick-file', async () => {
     lastModified: stats.mtimeMs
   };
 });
-
 
