@@ -88,6 +88,8 @@ function createWindow() {
   const setWhatsAppViewVisible = async visible => {
     if (visible === isWhatsAppViewAttached) return;
 
+    resizeWhatsAppView();
+    
     if (visible) {
       whatsAppView.setVisible(true);
       screenshotView.setVisible(false);
