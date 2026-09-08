@@ -1,4 +1,4 @@
-const { app, BrowserWindow, WebContentsView, session, dialog, ipcMain } = require('electron');
+const { app, BrowserWindow, WebContentsView, session, dialog, ipcMain, ImageView } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const { URL, pathToFileURL } = require('node:url');
@@ -75,27 +75,43 @@ function createWindow() {
       backgroundThrottling: true,
     }
   });
+  const screenshotView = new ImageView();
   const whatsAppContents = whatsAppView.webContents;
   let isWhatsAppViewAttached = false;
 
   const resizeWhatsAppView = () => {
     const { width, height } = win.getContentBounds();
     whatsAppView.setBounds({ x: 0, y: 0, width, height });
+    screenshotView.setBounds({ x: 0, y: 0, width, height });
   };
 
-  const setWhatsAppViewVisible = visible => {
+  const setWhatsAppViewVisible = async visible => {
     if (visible === isWhatsAppViewAttached) return;
 
     if (visible) {
-      win.contentView.addChildView(whatsAppView);
-      resizeWhatsAppView();
+      whatsAppView.setVisible(true);
+      screenshotView.setVisible(false);
     } else {
-      win.contentView.removeChildView(whatsAppView);
+      try {
+          const screenshot = await whatsAppContents.capturePage();
+          const bounds = whatsAppView.getBounds();
+          screenshotView.setBounds(bounds);
+          const resized = screenshot.resize({
+            width: bounds.width,
+            height: bounds.height,
+          });
+          screenshotView.setImage(resized);
+        } catch (error) {}
+        screenshotView.setVisible(true);  
+        whatsAppView.setVisible(false);
     }
 
     isWhatsAppViewAttached = visible;
   };
 
+  win.contentView.addChildView(whatsAppView,0);
+  win.contentView.addChildView(screenshotView,1);
+  resizeWhatsAppView();
   setWhatsAppViewVisible(true);
   win.on('resize', resizeWhatsAppView);
   
@@ -246,7 +262,7 @@ function createWindow() {
             } catch (error) {
               console.error('Erreur lors de la récupération de la visibilité:', error);
             }
-          }, 1000);
+          }, 10000);
     
     });
     
