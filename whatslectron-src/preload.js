@@ -4,6 +4,67 @@ const { ipcRenderer } = require('electron');
 console.log('[preload] TOP LEVEL loaded', location.href);
 window.__PRELOAD_MARKER__ = 'loaded-' + Date.now();
 
+//-----------------------------------------------
+//   Microphone state tracking
+//-----------------------------------------------
+function monitorMicrophoneUse() {
+  const mediaDevices = navigator.mediaDevices;
+  if (!mediaDevices || typeof mediaDevices.getUserMedia !== 'function') 
+  return;
+
+  const microphoneTracks = new Set();
+  const nativeGetUserMedia = mediaDevices.getUserMedia.bind(mediaDevices);
+  let lastReportedState = false;
+
+  //Report the microphone to the electron app
+  const reportState = () => {
+    for (const track of microphoneTracks) {
+      if (track.readyState === 'ended') microphoneTracks.delete(track);
+    }
+
+    const active = microphoneTracks.size > 0;
+    if (active === lastReportedState) return;
+
+    lastReportedState = active;
+    ipcRenderer.send('microphone-state-changed', active);
+  };
+
+  //Add a track in the list of monitored traacks
+  const watchTrack = track => {
+    if (!track || track.kind !== 'audio' || microphoneTracks.has(track)) return;
+
+    microphoneTracks.add(track);
+    track.addEventListener('ended', reportState, { once: true });
+    reportState();
+  };
+
+  //Handle new microphone track
+  mediaDevices.getUserMedia = async constraints => {
+    const stream = await nativeGetUserMedia(constraints);
+    stream.getAudioTracks().forEach(watchTrack);
+    return stream;
+  };
+
+  // Monitor clone event 
+  const nativeClone = MediaStreamTrack.prototype.clone;
+  MediaStreamTrack.prototype.clone = function () {
+    const clonedTrack = nativeClone.call(this);
+    if (this.kind === 'audio' && microphoneTracks.has(this)) watchTrack(clonedTrack);
+    return clonedTrack;
+  };
+
+  // Monitor stop event 
+  const nativeStop = MediaStreamTrack.prototype.stop;
+  MediaStreamTrack.prototype.stop = function () {
+    nativeStop.call(this);
+    if (microphoneTracks.has(this)) reportState();
+  };
+}
+
+monitorMicrophoneUse();
+
+//---------------------------------------------------------
+
 function isFileInput(el) {
   return el instanceof HTMLInputElement && el.type === 'file';
 }

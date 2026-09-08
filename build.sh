@@ -40,6 +40,7 @@ echo "[2/9] Building whatslectron..."
     node -v
     
     echo "---> pnpm install"
+    export PNPM_VERSION=11.24.0
     curl -fsSL https://get.pnpm.io/install.sh | env SHELL=bash sh -
     source ${BUILD_DIR}/.clickable/home/.bashrc
 

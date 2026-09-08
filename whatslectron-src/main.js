@@ -74,6 +74,27 @@ function createWindow() {
     }
   });
   
+  let microphoneActive = false;
+  let rendererRestartInProgress = false;
+  const isInBackground = () => BrowserWindow.getFocusedWindow() === null;
+
+  function restartRendererForMicrophonePrivacy()
+  {
+    if (!isInBackground() || rendererRestartInProgress || win.isDestroyed()) return;
+
+    rendererRestartInProgress = true;
+    microphoneActive = false;
+    console.warn('[privacy] microphone active in background; restarting renderer');
+
+    win.webContents.once('render-process-gone', () => {
+      if (win.webContents.isDestroyed()) return;
+
+      win.webContents.reload();
+      rendererRestartInProgress = false;
+    });
+    win.webContents.forcefullyCrashRenderer();
+  };
+
   win.webContents.on('will-navigate', (event, url) => {
   if (url === 'https://retry.local/') {
     event.preventDefault();
@@ -180,11 +201,21 @@ function createWindow() {
     win.on('blur', () => {
         win.webContents.setAudioMuted(true);
         console.log('Audio coupé');
+        if (microphoneActive) 
+        {
+          console.log('Microphone coupé');
+          restartRendererForMicrophonePrivacy();
+        }
     });
     
     win.on('minimize', () => {
         win.webContents.setAudioMuted(true);
         console.log('Audio coupé');
+        if (microphoneActive) 
+        {
+          console.log('Microphone coupé');
+          restartRendererForMicrophonePrivacy();
+        }
     });    
 
     win.on('focus', () => {
@@ -239,8 +270,18 @@ function createWindow() {
         return { action: 'deny' };
       });
     
-  
- 
+    //Get microphone state change events from preload
+    ipcMain.on('microphone-state-changed', (event, active) => {
+      
+      console.warn('[privacy] microphone state changed: ',active);
+      if (event.sender !== win.webContents) return;
+
+      microphoneActive = active === true;
+      if (microphoneActive && isInBackground()) {
+        restartRendererForMicrophonePrivacy();
+      }
+    }
+    );
     
 }
 
@@ -254,7 +295,8 @@ app.on('window-all-closed', () => {
   }
 }); 
 
-
+  
+  
 //Handle import files
 ipcMain.handle('pick-file', async () => {
   const MIME_BY_EXT = {
